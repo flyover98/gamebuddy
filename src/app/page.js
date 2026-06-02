@@ -26,12 +26,22 @@ export default function Home() {
     async function fetchBuddies() {
       setLoading(true);
       try {
+        // 1. Check who is currently logged in right now
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+        // 2. Start building the database query
         let query = supabase
           .from('player_profiles')
           .select('*')
           .order('is_online', { ascending: false })
           .order('last_seen', { ascending: false });
 
+        // 3. 🛠️ THE FIX: If someone is logged in, hide their ID from the list
+        if (currentUser) {
+          query = query.neq('id', currentUser.id);
+        }
+
+        // 4. Apply the rest of the search filters
         if (filters.game !== 'All') query = query.eq('primary_game', filters.game);
         if (filters.region !== 'All') query = query.eq('region', filters.region);
         if (filters.playstyle !== 'All') query = query.eq('playstyle', filters.playstyle);

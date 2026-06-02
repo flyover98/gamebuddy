@@ -1,16 +1,17 @@
-// src/app/profile/create/page.js
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 
-const GAMES = ['Valorant', 'BGMI', 'Free Fire', 'Counter-Strike 2'];
+const GAMES = ['Valorant', 'BGMI', 'Free Fire', 'Counter-Strike 2', 'League of Legends', 'Apex Legends'];
 const REGIONS = ['Asia', 'South Asia', 'Europe', 'North America', 'South America'];
 const PLAYSTYLES = ['Casual', 'Competitive', 'Coach'];
 
 export default function CreateProfile() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({
     username: '',
     display_name: '',
@@ -24,6 +25,30 @@ export default function CreateProfile() {
     hours_per_week: 10,
   });
 
+  // Guard: redirect to login if not authenticated
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace('/login');
+        return;
+      }
+      // If profile already exists, go to dashboard
+      const { data: profile } = await supabase
+        .from('player_profiles')
+        .select('id, username')
+        .eq('id', user.id)
+        .single();
+
+      if (profile) {
+        router.replace('/dashboard');
+        return;
+      }
+      setChecking(false);
+    }
+    checkAuth();
+  }, [router]);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
@@ -31,26 +56,44 @@ export default function CreateProfile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/login'); return; }
 
-    const { error } = await supabase.from('player_profiles').insert({ id: user.id, ...form });
+    // Use upsert so re-submitting doesn't fail
+    const { error: dbError } = await supabase
+      .from('player_profiles')
+      .upsert({ id: user.id, ...form }, { onConflict: 'id' });
 
-    if (error) {
-      alert('Error: ' + error.message);
+    if (dbError) {
+      setError(dbError.message);
       setLoading(false);
     } else {
       router.push('/dashboard');
     }
   };
 
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-8">
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 w-full max-w-lg">
         <h1 className="text-2xl font-bold text-cyan-400 mb-2">Create Your Profile</h1>
         <p className="text-slate-400 text-sm mb-6">Set up your gamer card so others can find you</p>
+
+        {error && (
+          <div className="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -105,6 +148,13 @@ export default function CreateProfile() {
                 {PLAYSTYLES.map(p => <option key={p}>{p}</option>)}
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs text-slate-400 mb-1">Hours per week</label>
+            <input type="number" name="hours_per_week" min="1" max="168"
+              value={form.hours_per_week} onChange={handleChange}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-cyan-500"/>
           </div>
 
           <div className="flex items-center gap-3">

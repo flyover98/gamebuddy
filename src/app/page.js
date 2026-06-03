@@ -3,7 +3,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabaseClient';
 import BuddyCard from '../components/BuddyCard';
-import FilterBar from '../components/FilterBar';
+import FilterBar, { GAMES } from '../components/FilterBar';
+
+// ── Game slug → display label lookup (used to show "Counter-Strike 2" not "cs2") 
+export const GAME_LABELS = Object.fromEntries(
+  GAMES.filter(g => g.value !== 'All').map(g => [g.value, g.label])
+);
 
 export default function Home() {
   const router = useRouter();
@@ -26,27 +31,24 @@ export default function Home() {
     async function fetchBuddies() {
       setLoading(true);
       try {
-        // 1. Check who is currently logged in right now
         const { data: { user: currentUser } } = await supabase.auth.getUser();
 
-        // 2. Start building the database query
         let query = supabase
           .from('player_profiles')
           .select('*')
           .order('is_online', { ascending: false })
           .order('last_seen', { ascending: false });
 
-        // 3. 🛠️ THE FIX: If someone is logged in, hide their ID from the list
-        if (currentUser) {
-          query = query.neq('id', currentUser.id);
-        }
+        // Hide logged-in user's own card
+        if (currentUser) query = query.neq('id', currentUser.id);
 
-        // 4. Apply the rest of the search filters
-        if (filters.game !== 'All') query = query.eq('primary_game', filters.game);
-        if (filters.region !== 'All') query = query.eq('region', filters.region);
+        // ── FIX: filters.game is now a slug ('cs2') not a display name ──
+        // The DB also stores slugs so eq() will now correctly match
+        if (filters.game !== 'All')      query = query.eq('primary_game', filters.game);
+        if (filters.region !== 'All')    query = query.eq('region', filters.region);
         if (filters.playstyle !== 'All') query = query.eq('playstyle', filters.playstyle);
-        if (filters.onlineOnly) query = query.eq('is_online', true);
-        if (search) query = query.ilike('username', `%${search}%`);
+        if (filters.onlineOnly)          query = query.eq('is_online', true);
+        if (search)                      query = query.ilike('username', `%${search}%`);
 
         const { data, error } = await query.limit(48);
         if (error) throw error;
@@ -60,6 +62,29 @@ export default function Home() {
     fetchBuddies();
   }, [filters, search]);
 
+  // ── Separate useEffect for real-time presence updates ──────────────
+  // Must be its own effect — cannot mix .on() with async code
+  useEffect(() => {
+    const channel = supabase
+      .channel('presence-updates')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'player_profiles' },
+        (payload) => {
+          setBuddies(prev =>
+            prev.map(b =>
+              b.id === payload.new.id
+                ? { ...b, is_online: payload.new.is_online, last_seen: payload.new.last_seen }
+                : b
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, []);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -67,13 +92,13 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen bg-[#050505] text-slate-200 selection:bg-cyan-500/30 font-sans overflow-hidden">
-      
+
       {/* Ambient Background Glow */}
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-cyan-600/20 blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none mix-blend-overlay" />
 
-      {/* Glassmorphism Navbar */}
+      {/* Navbar */}
       <header className="fixed top-0 w-full z-50 bg-[#050505]/60 backdrop-blur-xl border-b border-white/[0.05] shadow-2xl shadow-black/50">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => router.push('/')}>
@@ -84,7 +109,7 @@ export default function Home() {
               Game<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Buddy</span>
             </h1>
           </div>
-          
+
           <nav className="hidden md:flex gap-8 text-sm font-medium text-slate-400">
             <a href="#" className="hover:text-white transition-colors">Find Players</a>
             <a href="#" className="hover:text-white transition-colors">Tournaments</a>
@@ -128,8 +153,8 @@ export default function Home() {
       </header>
 
       <main className="relative pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Hero Section */}
+
+        {/* Hero */}
         <div className="text-center max-w-3xl mx-auto mt-10 mb-16 space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold tracking-widest uppercase mb-4 shadow-[0_0_15px_rgba(34,211,238,0.1)]">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
@@ -154,8 +179,8 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <input 
-              value={search} 
+            <input
+              value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search by gamertag or username..."
               className="w-full bg-white/[0.03] hover:bg-white/[0.05] border-none rounded-2xl pl-12 pr-4 py-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all"
@@ -167,7 +192,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Grid */}
+        {/* Player grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
@@ -193,7 +218,15 @@ export default function Home() {
         ) : buddies.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {buddies.map(buddy => (
-              <BuddyCard key={buddy.id} buddy={buddy} />
+              <BuddyCard
+                key={buddy.id}
+                buddy={{
+                  ...buddy,
+                  // Convert slug back to display label for the card UI
+                  // e.g. 'cs2' → 'Counter-Strike 2'
+                  primary_game: GAME_LABELS[buddy.primary_game] || buddy.primary_game,
+                }}
+              />
             ))}
           </div>
         ) : (
@@ -205,8 +238,8 @@ export default function Home() {
             </div>
             <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">The lobby is completely empty.</h3>
             <p className="text-slate-500 max-w-md mx-auto mb-8 font-medium">
-              {search || filters.game !== 'All' 
-                ? "No operators found with these parameters. Try adjusting your filters." 
+              {search || filters.game !== 'All'
+                ? "No operators found with these parameters. Try adjusting your filters."
                 : "You are the first one here. Create the inaugural profile on the network."}
             </p>
             <button

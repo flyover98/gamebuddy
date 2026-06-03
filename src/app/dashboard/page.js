@@ -1,8 +1,10 @@
 'use client';
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { useBuddies } from '@/hooks/useBuddies';
+import { usePresence } from '@/hooks/usePresence';
 // 1. Added the notification bell import right here 👇
 import NotificationBell from '@/components/NotificationBell';
 
@@ -102,6 +104,7 @@ export default function Dashboard() {
 
   // Use the new hook — pass null until user is known (hook handles it gracefully)
   const { buddies, loading: buddiesLoading, removeBuddy } = useBuddies(user?.id);
+  usePresence(user?.id);
 
   useEffect(() => {
     async function load() {

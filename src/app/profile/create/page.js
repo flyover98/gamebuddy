@@ -8,7 +8,9 @@ const GAMES = [
   { label: 'Valorant', value: 'valorant' },
   { label: 'BGMI', value: 'bgmi' },
   { label: 'Counter-Strike 2', value: 'cs2' },
-  { label: 'Free Fire', value: 'freefire' }
+  { label: 'Free Fire', value: 'freefire' },
+  { label: 'League of Legends', value: 'lol' },
+  { label: 'Apex Legends', value: 'apex' },
 ];
 
 const REGIONS = ['Asia', 'South Asia', 'Europe', 'North America', 'South America'];

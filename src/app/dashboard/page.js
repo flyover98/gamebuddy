@@ -1,8 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
-import { useBuddies } from '../../hooks/useBuddies';
+import { useBuddies } from '@/hooks/useBuddies';
+// 1. Added the notification bell import right here 👇
+import NotificationBell from '@/components/NotificationBell';
 
 // ─── Playstyle badge colours ──────────────────────────────────────────────
 const playstyleColor = {
@@ -196,6 +198,10 @@ export default function Dashboard() {
             <button onClick={() => router.push('/')} className="px-4 py-2 text-sm text-slate-300 border border-slate-700 rounded-xl hover:bg-slate-800 transition">
               ← Browse
             </button>
+            
+            {/* 2. Dropped the Bell right here between the two buttons! 👇 */}
+            <NotificationBell userId={user?.id} />
+
             <button onClick={handleSignOut} className="px-4 py-2 text-sm text-white bg-red-600/20 border border-red-500/30 rounded-xl hover:bg-red-600/40 transition">
               Sign Out
             </button>

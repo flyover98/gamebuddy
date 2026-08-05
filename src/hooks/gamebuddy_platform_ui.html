@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --cyan:#00D4FF;--violet:#7C3AED;--pink:#FF2D78;--dark:#0A0A0F;
+    --dark2:#0F0F1A;--dark3:#141428;--dark4:#1A1A35;--dark5:#1E1E40;
+    --glass:rgba(255,255,255,0.04);--glass2:rgba(255,255,255,0.08);
+    --border:rgba(0,212,255,0.15);--border2:rgba(124,58,237,0.25);
+    --text:#E8E8F0;--muted:#8888AA;--sidebar:260px
+  }
+  body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden}
+  .app{display:flex;min-height:100vh}
+
+  /* SIDEBAR */
+  .sidebar{width:var(--sidebar);background:linear-gradient(180deg,var(--dark2) 0%,var(--dark3) 100%);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100}
+  .logo{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+  .logo-text{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;background:linear-gradient(90deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px}
+  .logo-sub{font-size:10px;color:var(--muted);letter-spacing:3px;margin-top:3px;font-family:'Rajdhani',sans-serif}
+  .nav{flex:1;padding:16px 12px;overflow-y:auto}
+  .nav-section{margin-bottom:24px}
+  .nav-label{font-size:10px;letter-spacing:2px;color:var(--muted);padding:0 10px 8px;font-family:'Rajdhani',sans-serif;font-weight:600}
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:all .2s;color:var(--muted);font-size:13.5px;font-weight:500;position:relative;margin-bottom:2px}
+  .nav-item:hover{background:var(--glass2);color:var(--text)}
+  .nav-item.active{background:linear-gradient(90deg,rgba(0,212,255,0.12),rgba(124,58,237,0.08));color:var(--cyan);border-left:2px solid var(--cyan)}
+  .nav-item .icon{width:18px;text-align:center;font-size:15px}
+  .nav-badge{background:var(--pink);color:#fff;font-size:10px;padding:2px 6px;border-radius:999px;margin-left:auto;font-weight:600;font-family:'Rajdhani',sans-serif}
+  .sidebar-user{padding:16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px}
+  .user-avatar-sm{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'Orbitron',monospace;flex-shrink:0;position:relative}
+  .online-dot{width:8px;height:8px;background:#00FF88;border-radius:50%;border:2px solid var(--dark2);position:absolute;bottom:0;right:0}
+  .user-info-sm .name{font-size:13px;font-weight:600;color:var(--text)}
+  .user-info-sm .rank{font-size:11px;color:var(--cyan);font-family:'Rajdhani',sans-serif;font-weight:600}
+
+  /* MAIN */
+  .main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+  /* TOPBAR */
+  .topbar{height:60px;background:rgba(10,10,15,0.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:16px;position:sticky;top:0;z-index:50}
+  .topbar-title{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--text);flex:1}
+  .search-bar{display:flex;align-items:center;gap:10px;background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:8px 14px;width:260px}
+  .search-bar input{background:none;border:none;outline:none;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;width:100%}
+  .search-bar input::placeholder{color:var(--muted)}
+  .search-icon{color:var(--muted);font-size:14px}
+  .topbar-actions{display:flex;gap:10px;align-items:center}
+  .icon-btn{width:36px;height:36px;background:var(--glass);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:15px;transition:all .2s;position:relative}
+  .icon-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+  .notif-dot{width:7px;height:7px;background:var(--pink);border-radius:50%;border:1.5px solid var(--dark);position:absolute;top:5px;right:5px}
+
+  /* CONTENT */
+  .content{padding:28px;flex:1}
+
+  /* HERO */
+  .hero{background:linear-gradient(135deg,var(--dark3) 0%,rgba(124,58,237,0.15) 50%,rgba(0,212,255,0.08) 100%);border:1px solid var(--border2);border-radius:20px;padding:48px;position:relative;overflow:hidden;margin-bottom:28px}
+  .hero::before{content:'';position:absolute;top:-50px;right:-50px;width:400px;height:400px;background:radial-gradient(circle,rgba(124,58,237,0.2) 0%,transparent 70%);pointer-events:none}
+  .hero::after{content:'';position:absolute;bottom:-80px;left:200px;width:300px;height:300px;background:radial-gradient(circle,rgba(0,212,255,0.12) 0%,transparent 70%);pointer-events:none}
+  .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;position:relative;z-index:1}
+  .hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);border-radius:999px;padding:5px 14px;font-size:11px;color:var(--cyan);letter-spacing:2px;font-family:'Rajdhani',sans-serif;font-weight:700;margin-bottom:16px}
+  .live-dot{width:6px;height:6px;background:var(--cyan);border-radius:50%;animation:pulse 1.5s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+  .hero h1{font-family:'Orbitron',monospace;font-size:38px;font-weight:900;line-height:1.15;margin-bottom:16px}
+  .hero h1 span{background:linear-gradient(90deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hero-sub{color:var(--muted);font-size:15px;line-height:1.7;margin-bottom:28px}
+  .hero-btns{display:flex;gap:14px;flex-wrap:wrap}
+  .btn-primary{background:linear-gradient(90deg,var(--cyan),var(--violet));border:none;border-radius:10px;padding:12px 28px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,212,255,0.35)}
+  .btn-secondary{background:var(--glass);border:1px solid var(--border2);border-radius:10px;padding:12px 28px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s}
+  .btn-secondary:hover{border-color:var(--cyan);color:var(--cyan)}
+  .hero-stats{display:flex;gap:28px;margin-top:8px}
+  .hero-stat .num{font-family:'Orbitron',monospace;font-size:22px;font-weight:700;color:var(--cyan)}
+  .hero-stat .lbl{font-size:11px;color:var(--muted);letter-spacing:1px;font-family:'Rajdhani',sans-serif}
+  .hero-card{background:rgba(255,255,255,0.04);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;position:relative}
+  .hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+  .featured-match{margin-bottom:20px}
+  .match-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .match-title{font-size:11px;letter-spacing:2px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600}
+  .live-badge{background:rgba(255,45,120,0.2);border:1px solid rgba(255,45,120,0.5);border-radius:4px;padding:3px 8px;font-size:10px;color:var(--pink);font-family:'Orbitron',monospace;font-weight:700;animation:pulse 2s infinite}
+  .match-teams{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .team{text-align:center}
+  .team-logo{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:14px;font-weight:900;margin:0 auto 8px}
+  .team-logo.t1{background:linear-gradient(135deg,#1a1a35,var(--violet))}
+  .team-logo.t2{background:linear-gradient(135deg,#1a2535,var(--cyan))}
+  .team-name{font-size:12px;font-weight:600;color:var(--text);font-family:'Rajdhani',sans-serif}
+  .score{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;color:var(--text)}
+  .score-sep{color:var(--muted);margin:0 4px}
+  .match-info{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .info-pill{background:var(--glass2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--muted);font-family:'Rajdhani',sans-serif}
+
+  /* SECTION HEADERS */
+  .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .section-title{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;color:var(--text);display:flex;align-items:center;gap:10px}
+  .section-title::before{content:'';width:3px;height:18px;background:linear-gradient(180deg,var(--cyan),var(--violet));border-radius:2px}
+  .view-all{font-size:12px;color:var(--cyan);cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px;border:1px solid rgba(0,212,255,0.3);padding:5px 12px;border-radius:6px;transition:all .2s}
+  .view-all:hover{background:rgba(0,212,255,0.1)}
+
+  /* PLAYER CARDS */
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+  .player-card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:16px;padding:20px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+  .player-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0;transition:opacity .3s}
+  .player-card:hover{border-color:rgba(0,212,255,0.4);transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
+  .player-card:hover::before{opacity:1}
+  .player-avatar{width:56px;height:56px;border-radius:50%;margin:0 auto 12px;position:relative}
+  .avatar-img{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:16px;font-weight:700}
+  .avatar-ring{position:absolute;top:-3px;left:-3px;right:-3px;bottom:-3px;border-radius:50%;border:2px solid var(--cyan);opacity:.5}
+  .player-name{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;text-align:center;margin-bottom:4px}
+  .player-game{font-size:11px;color:var(--muted);text-align:center;margin-bottom:12px}
+  .rank-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:6px;padding:4px 10px;font-size:11px;color:#A78BFA;font-family:'Rajdhani',sans-serif;font-weight:700}
+  .player-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .pstat{text-align:center;padding:8px;background:rgba(255,255,255,0.03);border-radius:6px}
+  .pstat-val{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--cyan)}
+  .pstat-lbl{font-size:10px;color:var(--muted);font-family:'Rajdhani',sans-serif;margin-top:2px}
+  .status-online{display:flex;align-items:center;justify-content:center;gap:5px;font-size:10px;color:#00FF88;margin-top:10px;font-family:'Rajdhani',sans-serif;font-weight:600}
+
+  /* LEADERBOARD */
+  .leaderboard{background:var(--glass);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:28px}
+  .lb-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .lb-row{display:grid;grid-template-columns:40px 1fr 80px 80px 80px;gap:12px;align-items:center;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.03);transition:background .2s;cursor:pointer}
+  .lb-row:hover{background:var(--glass2)}
+  .lb-row:last-child{border-bottom:none}
+  .lb-row.top1{background:linear-gradient(90deg,rgba(255,215,0,0.06),transparent)}
+  .lb-row.top2{background:linear-gradient(90deg,rgba(192,192,192,0.05),transparent)}
+  .lb-row.top3{background:linear-gradient(90deg,rgba(205,127,50,0.05),transparent)}
+  .rank-num{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;text-align:center}
+  .rank-num.r1{color:#FFD700}
+  .rank-num.r2{color:#C0C0C0}
+  .rank-num.r3{color:#CD7F32}
+  .rank-num.rn{color:var(--muted)}
+  .lb-player{display:flex;align-items:center;gap:12px}
+  .lb-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:11px;font-weight:700;flex-shrink:0}
+  .lb-name{font-size:14px;font-weight:600;font-family:'Rajdhani',sans-serif}
+  .lb-handle{font-size:11px;color:var(--muted)}
+  .lb-score{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--cyan);text-align:right}
+  .lb-kd{font-size:13px;color:var(--text);text-align:right;font-family:'Rajdhani',sans-serif;font-weight:600}
+  .lb-wins{font-size:13px;color:#00FF88;text-align:right;font-family:'Rajdhani',sans-serif;font-weight:600}
+
+  /* TOURNAMENTS */
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+  .tournament-card{background:var(--glass);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .25s;position:relative}
+  .tournament-card:hover{transform:translateY(-4px);border-color:rgba(124,58,237,0.5);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
+  .tc-banner{height:100px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .tc-body{padding:16px}
+  .tc-game{font-size:10px;letter-spacing:2px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;margin-bottom:6px}
+  .tc-name{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;margin-bottom:10px}
+  .tc-prize{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:#FFD700;margin-bottom:12px}
+  .tc-meta{display:flex;justify-content:space-between;align-items:center}
+  .tc-tag{background:rgba(255,45,120,0.12);border:1px solid rgba(255,45,120,0.3);border-radius:4px;padding:3px 8px;font-size:10px;color:var(--pink);font-family:'Rajdhani',sans-serif;font-weight:700}
+  .tc-slots{font-size:11px;color:var(--muted);font-family:'Rajdhani',sans-serif}
+  .progress-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:10px;overflow:hidden}
+  .progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--cyan),var(--violet))}
+
+  /* COMMUNITY */
+  .community-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+  .community-card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:20px;cursor:pointer;transition:all .2s}
+  .community-card:hover{border-color:rgba(0,212,255,0.3)}
+  .cc-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .cc-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .cc-title{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700}
+  .cc-sub{font-size:11px;color:var(--muted);font-family:'Rajdhani',sans-serif}
+  .discussion-item{padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer}
+  .discussion-item:last-child{border-bottom:none;padding-bottom:0}
+  .di-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px;line-height:1.4}
+  .di-meta{display:flex;gap:12px;font-size:11px;color:var(--muted);font-family:'Rajdhani',sans-serif}
+  .di-hot{color:var(--pink);font-weight:700}
+
+  /* TEAM FINDER */
+  .team-card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:20px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;margin-bottom:28px}
+  .team-card:hover{border-color:rgba(0,212,255,0.3)}
+  .team-header{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+  .team-logo-lg{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:14px;font-weight:900}
+  .team-info .tname{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700}
+  .team-info .tgame{font-size:12px;color:var(--cyan);font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px}
+  .team-members{display:flex;gap:-6px;margin-bottom:14px}
+  .member-chip{width:28px;height:28px;border-radius:50%;border:2px solid var(--dark2);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:8px;font-weight:700;margin-right:-8px}
+  .member-count{width:28px;height:28px;border-radius:50%;border:2px solid var(--dark2);background:var(--glass2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);margin-right:-8px}
+  .team-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .tag{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--muted);font-family:'Rajdhani',sans-serif}
+  .team-footer{display:flex;justify-content:space-between;align-items:center}
+  .team-rank{font-size:12px;color:var(--muted);font-family:'Rajdhani',sans-serif}
+  .team-rank span{color:var(--cyan);font-weight:700}
+  .btn-join{background:linear-gradient(90deg,var(--violet),var(--cyan));border:none;border-radius:8px;padding:8px 20px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:1px}
+  .btn-join:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,212,255,0.3)}
+
+  /* PROFILE SECTION */
+  .profile-layout{display:grid;grid-template-columns:1fr 2fr;gap:20px;margin-bottom:28px}
+  .profile-card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center;position:relative}
+  .profile-card::before{content:'';position:absolute;top:0;left:0;right:0;height:80px;background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(0,212,255,0.1));border-radius:16px 16px 0 0}
+  .profile-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--cyan));display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:22px;font-weight:900;margin:28px auto 12px;position:relative;z-index:1;border:3px solid var(--dark2)}
+  .profile-name{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;margin-bottom:4px}
+  .profile-handle{font-size:12px;color:var(--cyan);font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:2px;margin-bottom:16px}
+  .badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+  .badge{padding:4px 10px;border-radius:6px;font-size:10px;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:1px}
+  .badge.legend{background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.4);color:#FFD700}
+  .badge.mvp{background:rgba(255,45,120,0.15);border:1px solid rgba(255,45,120,0.4);color:var(--pink)}
+  .badge.veteran{background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.4);color:var(--cyan)}
+  .profile-bio{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+  .profile-actions{display:flex;gap:10px;justify-content:center}
+  .stats-card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:24px}
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+  .stat-box{padding:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;text-align:center}
+  .stat-box .sval{font-family:'Orbitron',monospace;font-size:20px;font-weight:700;margin-bottom:4px}
+  .stat-box .slbl{font-size:11px;color:var(--muted);font-family:'Rajdhani',sans-serif;letter-spacing:1px}
+  .activity-timeline{margin-top:16px}
+  .timeline-item{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+  .timeline-item:last-child{border-bottom:none}
+  .ti-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+  .ti-content{flex:1}
+  .ti-title{font-size:13px;font-weight:500;margin-bottom:2px}
+  .ti-time{font-size:11px;color:var(--muted);font-family:'Rajdhani',sans-serif}
+
+  /* PREMIUM */
+  .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+  .pricing-card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center;transition:all .25s;cursor:pointer;position:relative;overflow:hidden}
+  .pricing-card.featured{border-color:var(--cyan);background:linear-gradient(135deg,rgba(0,212,255,0.06),rgba(124,58,237,0.06))}
+  .pricing-card.featured::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--violet))}
+  .pricing-card:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
+  .popular-badge{background:linear-gradient(90deg,var(--cyan),var(--violet));color:#fff;font-size:10px;padding:4px 12px;border-radius:999px;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:1px;position:absolute;top:-1px;left:50%;transform:translateX(-50%);white-space:nowrap}
+  .plan-name{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:3px;color:var(--muted);margin-bottom:12px;margin-top:16px}
+  .plan-price{font-family:'Orbitron',monospace;font-size:32px;font-weight:900;margin-bottom:6px}
+  .plan-price.free-price{color:var(--text)}
+  .plan-price.pro-price{background:linear-gradient(90deg,var(--cyan),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .plan-price.elite-price{color:#FFD700}
+  .plan-period{font-size:12px;color:var(--muted);margin-bottom:20px;font-family:'Rajdhani',sans-serif}
+  .plan-features{text-align:left;margin-bottom:24px}
+  .pf-item{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04)}
+  .pf-item:last-child{border-bottom:none}
+  .pf-check{color:#00FF88;font-size:13px;flex-shrink:0}
+  .pf-x{color:var(--muted);font-size:13px;flex-shrink:0}
+  .pf-text{color:var(--text)}
+  .pf-text.dim{color:var(--muted)}
+
+  /* DASHBOARD */
+  .dashboard-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+  .dash-stat{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden}
+  .dash-stat::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.08}
+  .dash-stat.s1::after{background:var(--cyan)}
+  .dash-stat.s2::after{background:var(--violet)}
+  .dash-stat.s3::after{background:var(--pink)}
+  .dash-stat.s4::after{background:#00FF88}
+  .ds-label{font-size:11px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px;margin-bottom:8px}
+  .ds-value{font-family:'Orbitron',monospace;font-size:24px;font-weight:700;margin-bottom:4px}
+  .ds-value.c1{color:var(--cyan)}
+  .ds-value.c2{color:#A78BFA}
+  .ds-value.c3{color:var(--pink)}
+  .ds-value.c4{color:#00FF88}
+  .ds-change{font-size:11px;color:#00FF88;font-family:'Rajdhani',sans-serif}
+
+  /* PAGE SWITCHER */
+  .page{display:none}
+  .page.active{display:block}
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:var(--dark2)}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+  /* SCANLINE TEXTURE */
+  .scanlines{pointer-events:none;position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);z-index:999;opacity:.4}
+
+  /* HUD CORNERS */
+  .hud-corners{position:relative}
+  .hud-corners::before,.hud-corners::after{content:'';position:absolute;width:12px;height:12px;border-color:var(--cyan);border-style:solid;opacity:.5}
+  .hud-corners::before{top:8px;left:8px;border-width:2px 0 0 2px}
+  .hud-corners::after{top:8px;right:8px;border-width:2px 2px 0 0}
+
+  @media(max-width:900px){
+    :root{--sidebar:60px}
+    .logo-text,.logo-sub,.nav-label,.nav-item span,.user-info-sm{display:none}
+    .nav-item{justify-content:center;padding:12px}
+    .grid-4{grid-template-columns:repeat(2,1fr)}
+    .grid-3{grid-template-columns:1fr 1fr}
+    .pricing-grid{grid-template-columns:1fr}
+    .profile-layout{grid-template-columns:1fr}
+    .hero-grid{grid-template-columns:1fr}
+    .dashboard-grid{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+
+<div class="scanlines"></div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-text">GAMEBUDDY</div>
+      <div class="logo-sub">ESPORTS PLATFORM</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">
+        <div class="nav-label">MAIN</div>
+        <div class="nav-item active" onclick="switchPage('dashboard')">
+          <span class="icon">⊞</span><span>Dashboard</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('explore')">
+          <span class="icon">◎</span><span>Explore Players</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('profile')">
+          <span class="icon">◈</span><span>My Profile</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('teams')">
+          <span class="icon">◆</span><span>Team Finder</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">COMPETE</div>
+        <div class="nav-item" onclick="switchPage('tournaments')">
+          <span class="icon">🏆</span><span>Tournaments</span><span class="nav-badge">3</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('leaderboard')">
+          <span class="icon">◉</span><span>Leaderboards</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">SOCIAL</div>
+        <div class="nav-item" onclick="switchPage('community')">
+          <span class="icon">◫</span><span>Community Hub</span><span class="nav-badge">12</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('premium')">
+          <span class="icon">✦</span><span>Premium</span>
+        </div>
+        <div class="nav-item" onclick="switchPage('settings')">
+          <span class="icon">⚙</span><span>Settings</span>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar-sm">ZX<div class="online-dot"></div></div>
+      <div class="user-info-sm">
+        <div class="name">ZeroX</div>
+        <div class="rank">◈ DIAMOND</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="search-bar">
+        <span class="search-icon">⌕</span>
+        <input placeholder="Search players, teams, tournaments...">
+      </div>
+      <div class="topbar-actions">
+        <div class="icon-btn">🔔<div class="notif-dot"></div></div>
+        <div class="icon-btn">✉</div>
+        <div class="icon-btn">⋮</div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- DASHBOARD PAGE -->
+      <div class="page active" id="page-dashboard">
+        <!-- Hero -->
+        <div class="hero hud-corners">
+          <div class="hero-grid">
+            <div>
+              <div class="hero-tag"><span class="live-dot"></span>SEASON 12 NOW LIVE</div>
+              <h1>Find Your<br><span>Perfect Squad</span><br>Dominate Together</h1>
+              <p class="hero-sub">Connect with elite gamers, build unstoppable teams, and compete on the world's most advanced esports platform.</p>
+              <div class="hero-btns">
+                <button class="btn-primary" onclick="switchPage('explore')">FIND PLAYERS ➜</button>
+                <button class="btn-secondary" onclick="switchPage('tournaments')">VIEW TOURNAMENTS</button>
+              </div>
+              <div class="hero-stats" style="margin-top:28px">
+                <div class="hero-stat"><div class="num">847K</div><div class="lbl">ACTIVE PLAYERS</div></div>
+                <div class="hero-stat"><div class="num">12.4K</div><div class="lbl">TEAMS FORMED</div></div>
+                <div class="hero-stat"><div class="num">$2.1M</div><div class="lbl">PRIZE POOL</div></div>
+              </div>
+            </div>
+            <div>
+              <div class="hero-card">
+                <div class="featured-match">
+                  <div class="match-header">
+                    <span class="match-title">FEATURED MATCH · VALORANT</span>
+                    <span class="live-badge">● LIVE</span>
+                  </div>
+                  <div class="match-teams">
+                    <div class="team">
+                      <div class="team-logo t1">NX</div>
+                      <div class="team-name">NEXUS</div>
+                    </div>
+                    <div>
+                      <div class="score">13<span class="score-sep">:</span>11</div>
+                      <div style="font-size:10px;color:var(--muted);text-align:center;font-family:'Rajdhani',sans-serif;margin-top:4px">ROUND 24</div>
+                    </div>
+                    <div class="team">
+                      <div class="team-logo t2">PH</div>
+                      <div class="team-name">PHANTOM</div>
+                    </div>
+                  </div>
+                  <div class="match-info">
+                    <span class="info-pill">SEMIFINALS</span>
+                    <span class="info-pill">ASCENT MAP</span>
+                    <span class="info-pill">$50K PRIZE</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="dashboard-grid">
+          <div class="dash-stat s1"><div class="ds-label">MY RANK POINTS</div><div class="ds-value c1">4,820</div><div class="ds-change">↑ +340 this week</div></div>
+          <div class="dash-stat s2"><div class="ds-label">WIN RATE</div><div class="ds-value c2">68.4%</div><div class="ds-change">↑ +2.1% this week</div></div>
+          <div class="dash-stat s3"><div class="ds-label">MATCHES PLAYED</div><div class="ds-value c3">1,247</div><div class="ds-change">↑ 23 this week</div></div>
+          <div class="dash-stat s4"><div class="ds-label">HOURS PLAYED</div><div class="ds-value c4">3,891</div><div class="ds-change">↑ 42h this week</div></div>
+        </div>
+
+        <!-- Featured Players -->
+        <div class="section-header">
+          <div class="section-title">TOP PLAYERS NEAR YOU</div>
+          <div class="view-all" onclick="switchPage('explore')">VIEW ALL</div>
+        </div>
+        <div class="grid-4">
+          <div class="player-card" onclick="switchPage('profile')">
+            <div class="player-avatar"><div class="avatar-img" style="background:linear-gradient(135deg,#1a0a2e,var(--violet))">VX</div><div class="avatar-ring"></div></div>
+            <div class="player-name">VortexKing</div>
+            <div class="player-game">VALORANT · Duelist</div>
+            <div style="display:flex;justify-content:center"><div class="rank-badge">◈ IMMORTAL 3</div></div>
+            <div class="player-stats">
+              <div class="pstat"><div class="pstat-val">2.8</div><div class="pstat-lbl">K/D</div></div>
+              <div class="pstat"><div class="pstat-val">72%</div><div class="pstat-lbl">WIN</div></div>
+            </div>
+            <div class="status-online">● ONLINE</div>
+          </div>
+          <div class="player-card" onclick="switchPage('profile')">
+            <div class="player-avatar"><div class="avatar-img" style="background:linear-gradient(135deg,#0a1a2e,#1D6FA4)">SN</div><div class="avatar-ring" style="border-color:#00FF88"></div></div>
+            <div class="player-name">ShadowNova</div>
+            <div class="player-game">CS2 · AWPer</div>
+            <div style="display:flex;justify-content:center"><div class="rank-badge" style="background:rgba(255,215,0,0.1);border-color:rgba(255,215,0,0.3);color:#FFD700">✦ GLOBAL ELITE</div></div>
+            <div class="player-stats">
+              <div class="pstat"><div class="pstat-val">3.4</div><div class="pstat-lbl">K/D</div></div>
+              <div class="pstat"><div class="pstat-val">78%</div><div class="pstat-lbl">WIN</div></div>
+            </div>
+            <div class="status-online">● IN MATCH</div>
+          </div>
+          <div class="player-card" onclick="switchPage('profile')">
+            <div class="player-avatar"><div class="avatar-img" style="background:linear-gradient(135deg,#1a0a0a,#FF2D78)">FR</div><div class="avatar-ring" style="border-color:var(--pink)"></div></div>
+            <div class="player-name">FlameRush</div>
+            <div class="player-game">Apex Legends · Wraith</div>
+            <div style="display:flex;justify-content:center"><div class="rank-badge" style="background:rgba(255,45,120,0.1);border-color:rgba(255,45,120,0.3);color:var(--pink)">⬡ PREDATOR</div></div>
+            <div class="player-stats">
+              <div class="pstat"><div class="pstat-val">4.1</div><div class="pstat-lbl">K/D</div></div>
+              <div class="pstat"><div class="pstat-val">81%</div><div class="pstat-lbl">WIN</div></div>
+            </div>
+            <div class="status-online" style="color:var(--muted)">● OFFLINE</div>
+          </div>
+          <div class="player-card" onclick="switchPage('profile')">
+            <div class="player-avatar"><div class="avatar-img" style="background:linear-gradient(135deg,#0a1a0a,#00FF88)">CY</div><div class="avatar-ring" style="border-color:var(--cyan)"></div></div>
+            <div class="player-name">CyberWolf</div>
+            <div class="player-game">League of Legends · ADC</div>
+            <div style="display:flex;justify-content:center"><div class="rank-badge" style="background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.3);color:var(--cyan)">◆ CHALLENGER</div></div>
+            <div class="player-stats">
+              <div class="pstat"><div class="pstat-val">7.2</div><div class="pstat-lbl">KDA</div></div>
+              <div class="pstat"><div class="pstat-val">65%</div><div class="pstat-lbl">WIN</div></div>
+            </div>
+            <div class="status-online">● ONLINE</div>
+          </div>
+        </div>
+
+        <!-- Leaderboard Preview -->
+        <div class="section-header">
+          <div class="section-title">GLOBAL LEADERBOARD</div>
+          <div class="view-all" onclick="switchPage('leaderboard')">VIEW ALL</div>
+        </div>
+        <div class="leaderboard">
+          <div class="lb-header">
+            <div style="font-family:'Rajdhani',sans-serif;font-size:13px;color:var(--muted);">PLAYER</div>
+            <div style="font-family:'Rajdhani',sans-serif;font-size:13px;color:var(--muted);margin-left:auto;margin-right:40px">SCORE</div>
+          </div>
+          <div class="lb-row top1">
+            <div class="rank-num r1">01</div>
+            <div class="lb-player"><div class="lb-avatar" style="background:linear-gradient(135deg,#FFD700,#FF8C00)">XK</div><div><div class="lb-name">XenithKiller</div><div class="lb-handle">#7823 · Valorant</div></div></div>
+            <div class="lb-score">98,420</div>
+            <div class="lb-kd">4.2</div>
+            <div class="lb-wins">847</div>
+          </div>
+          <div class="lb-row top2">
+            <div class="rank-num r2">02</div>
+            <div class="lb-player"><div class="lb-avatar" style="background:linear-gradient(135deg,#C0C0C0,#808080)">NX</div><div><div class="lb-name">NightXero</div><div class="lb-handle">#2241 · CS2</div></div></div>
+            <div class="lb-score">94,815</div>
+            <div class="lb-kd">3.9</div>
+            <div class="lb-wins">792</div>
+          </div>
+          <div class="lb-row top3">
+            <div class="rank-num r3">03</div>
+            <div class="lb-player"><div class="lb-avatar" style="background:linear-gradient(135deg,#CD7F32,#8B4513)">QN</div><div><div class="lb-name">QuantumNova</div><div class="lb-handle">#9912 · Apex</div></div></div>
+            <div class="lb-score">91,230</div>
+            <div class="lb-kd">3.6</div>
+            <div class="lb-wins">751</div>
+          </div>
+          <div class="lb-row">
+            <div class="rank-num rn">04</div>
+            <div class="lb-player"><div class="lb-avatar" style="background:linear-gradient(135deg,var(--violet),#1a1a35)">SR</div><div><div class="lb-name">StormRider</div><div class="lb-handle">#4456 · Valorant</div></div></div>
+            <div class="lb-score">88,740</div>
+            <div class="lb-kd">3.3</div>
+            <div class="lb-wins">698</div>
+          </div>
+          <div class="lb-row">
+            <div class="rank-num rn">05</div>
+            <div class="lb-player"><div class="lb-avatar" style="background:linear-gradient(135deg,var(--cyan),#003344)">ZX</div><div><div class="lb-name">ZeroX <span style="color:var(--cyan);font-size:10px">(YOU)</span></div><div class="lb-handle">#0001 · Valorant</div></div></div>
+            <div class="lb-score">82,150</div>
+            <div class="lb-kd">2.8</div>
+            <div class="lb-wins">621</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPLORE PAGE -->
+      <div class="page" id="page-explore">
+        <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap">
+          <select style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:10px 16px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;flex:1;min-width:120px;cursor:pointer">
+            <option>ALL GAMES</option><option>VALORANT</option><option>CS2</option><option>APEX LEGENDS</option><option>LEAGUE OF LEGENDS</option>
+          </select>
+          <select style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:10px 16px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;flex:1;min-width:120px;cursor:pointer">
+            <option>ALL RANKS</option><option>IRON-BRONZE</option><option>SILVER-GOLD</option><option>PLAT-DIAMOND</option><option>IMMORTAL+</option>
+          </select>
+          <select style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:10px 16px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;flex:1;min-width:120px;cursor:pointer">
+            <option>ANY REGION</option><option>NA EAST</option><option>EU WEST</option><option>ASIA PACIFIC</option>
+          </select>
+          <select style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:10px 16px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;flex:1;min-width:120px;cursor:pointer">
+            <option>ANY STATUS</option><option>● ONLINE NOW</option><option>LOOKING FOR TEAM</option><option>CASUAL ONLY</option>
+          </select>
+          <button class="btn-primary" style="padding:10px 24px">FILTER ⊞</button>
+        </div>
+        <div class="grid-4">
+          <div class="player-card"><div class="player-avatar"><div class="avatar-img" style="background:linear-gradient(135deg,#1a0a2e,var(--violet))">VX</div><div class="avatar-ring"></div></div><div class="player-name">VortexKing</div><div class="player-game">VALORANT · Duelist</div><div style="display:flex;justify-content:center"><div class="rank-badge">◈ IMMORTAL 3</div></div><div class="player-stats"><div class="pstat"><div class="pstat-val">2.8</div><div class="pstat-lbl">K/D</div></div><div class="pstat"><div class="pstat-val">72%</div><div class="pstat-lbl">WIN</div></div></div><div class="status-online">● ONLINE</div></div>
+          <div class="player-card"><div class="player-avatar"><div class="avatar-img" style="background:linear-gradient(135deg,#0a1a2e,#1D6FA4)">SN</div><div class="avatar-ring" style="border-color:#00FF88"></div></div><div class="player-name">ShadowNova</div><div class="player-game">CS2 · AWPer</div><div style="display:flex;justify-content:center"><div class="rank-badge" style="background:rgba(255,215,0,0.1);border-color:rgba(255,215,0,0.3);color:#FFD700">✦ GLOBAL ELITE</div></div><div class="player-stats"><div class="pstat"><div class="pstat-val">3.4</div><div class="pstat-lbl">K/D</div></div><div class="pstat"><div class="pstat-val">78%</div><div class="pstat-lbl">WIN</div></div></div><div class="status-online">● IN MATCH</div></div>
+          <div class="player-card"><div class="player-avatar"><div class="avatar-img" style="background:linear-gradient(135deg,#1a0a0a,#FF2D78)">FR</div><div class="avatar-ring" style="border-color:var(--pink)"></div></div><div class="player-name">FlameRush</div><div class="player-game">Apex Legends · Wraith</div><div style="display:flex;justify-content:center"><div class="rank-badge" style="background:rgba(255,45,120,0.1);border-color:rgba(255,45,120,0.3);color:var(--pink)">⬡ PREDATOR</div></div><div class="player-stats"><div class="pstat"><div class="pstat-val">4.1</div><div class="pstat-lbl">K/D</div></div><div class="pstat"><div class="pstat-val">81%</div><div class="pstat-lbl">WIN</div></div></div><div class="status-online" style="color:var(--muted)">● OFFLINE</div></div>
+          <div class="player-card"><div class="player-avatar"><div class="avatar-img" style="background:linear-gradient(135deg,#0a1a0a,#00FF88)">CY</div><div class="avatar-ring" style="border-color:var(--cyan)"></div></div><div class="player-name">CyberWolf</div><div class="player-game">LoL · ADC</div><div style="display:flex;justify-content:center"><div class="rank-badge" style="background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.3);color:var(--cyan)">◆ CHALLENGER</div></div><div class="player-stats"><div class="pstat"><div class="pstat-val">7.2</div><div class="pstat-lbl">KDA</div></div><div class="pstat"><div class="pstat-val">65%</div><div class="pstat-lbl">WIN</div></div></div><div class="status-online">● ONLINE</div></div>
+          <div class="player-card"><div class="player-avatar"><div class="avatar-img" style="background:linear-gradient(135deg,#2a0a1a,#FF8C00)">PT</div><div class="avatar-ring" style="border-color:#FF8C00"></div></div><div class="player-name">PhantomTide</div><div class="player-game">VALORANT · Sentinel</div><div style="display:flex;justify-content:center"><div class="rank-badge">◈ DIAMOND 2</div></div><div class="player-stats"><div class="pstat"><div class="pstat-val">2.1</div><div class="pstat-lbl">K/D</div></div><div class="pstat"><div class="pstat-val">61%</div><div class="pstat-lbl">WIN</div></div></div><div class="status-online">● ONLINE</div></div>
+          <div class="player-card"><div class="player-avatar"><div class="avatar-img" style="background:linear-gradient(135deg,#0a2a1a,#00CC77)">EX</div><div class="avatar-ring" style="border-color:#00CC77"></div></div><div class="player-name">EchoZero</div><div class="player-game">Overwatch 2 · Tank</div><div style="display:flex;justify-content:center"><div class="rank-badge" style="background:rgba(0,204,119,0.1);border-color:rgba(0,204,119,0.3);color:#00CC77">★ GRANDMASTER</div></div><div class="player-stats"><div class="pstat"><div class="pstat-val">68%</div><div class="pstat-lbl">WIN</div></div><div class="pstat"><div class="pstat-val">3.8K</div><div class="pstat-lbl">HOURS</div></div></div><div class="status-online">● ONLINE</div></div>
+          <div class="player-card"><div class="player-avatar"><div class="avatar-img" style="background:linear-gradient(135deg,#1a1a0a,var(--cyan))">RZ</div><div class="avatar-ring"></div></div><div class="player-name">RazeStorm</div><div class="player-game">CS2 · Rifler</div><div style="display:flex;justify-content:center"><div class="rank-badge" style="background:rgba(255,215,0,0.1);border-color:rgba(255,215,0,0.3);color:#FFD700">✦ FACEIT 10</div></div><div class="player-stats"><div class="pstat"><div class="pstat-val">2.9</div><div class="pstat-lbl">K/D</div></div><div class="pstat"><div class="pstat-val">74%</div><div class="pstat-lbl">WIN</div></div></div><div class="status-online" style="color:var(--muted)">● OFFLINE</div></div>
+          <div class="player-card"><div class="player-avatar"><div class="avatar-img" style="background:linear-gradient(135deg,#2a1a2a,#CC44FF)">LB</div><div class="avatar-ring" style="border-color:#CC44FF"></div></div><div class="player-name">LunaBlaze</div><div class="player-game">VALORANT · Controller</div><div style="display:flex;justify-content:center"><div class="rank-badge" style="background:rgba(204,68,255,0.1);border-color:rgba(204,68,255,0.3);color:#CC44FF">◈ IMMORTAL 1</div></div><div class="player-stats"><div class="pstat"><div class="pstat-val">1.9</div><div class="pstat-lbl">K/D</div></div><div class="pstat"><div class="pstat-val">69%</div><div class="pstat-lbl">WIN</div></div></div><div class="status-online">● ONLINE</div></div>
+        </div>
+      </div>
+
+      <!-- PROFILE PAGE -->
+      <div class="page" id="page-profile">
+        <div class="profile-layout">
+          <div class="profile-card hud-corners">
+            <div class="profile-avatar">ZX</div>
+            <div class="profile-name">ZeroX</div>
+            <div class="profile-handle">◈ #ZEROX-0001</div>
+            <div class="badges">
+              <div class="badge legend">★ LEGEND</div>
+              <div class="badge mvp">⚡ MVP</div>
+              <div class="badge veteran">◎ VETERAN</div>
+            </div>
+            <div class="profile-bio">Competitive Valorant player since beta. Former semi-pro. Love clutch rounds and IGL work. Looking for serious ranked stack.</div>
+            <div class="profile-actions">
+              <button class="btn-primary" style="padding:8px 16px;font-size:12px">ADD FRIEND</button>
+              <button class="btn-secondary" style="padding:8px 16px;font-size:12px">INVITE</button>
+            </div>
+            <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;text-align:left">
+              <div style="font-size:11px;letter-spacing:2px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;margin-bottom:12px">GAMES</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text)">Valorant</span><span style="font-size:12px;color:var(--cyan);font-family:'Rajdhani',sans-serif;font-weight:700">IMMORTAL 3</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text)">CS2</span><span style="font-size:12px;color:#A78BFA;font-family:'Rajdhani',sans-serif;font-weight:700">FACEIT 8</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text)">Apex Legends</span><span style="font-size:12px;color:var(--pink);font-family:'Rajdhani',sans-serif;font-weight:700">DIAMOND</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="stats-card">
+            <div style="font-size:11px;letter-spacing:2px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;margin-bottom:16px">LIFETIME STATS · VALORANT</div>
+            <div class="stats-grid">
+              <div class="stat-box"><div class="sval" style="color:var(--cyan)">2.8</div><div class="slbl">K/D RATIO</div></div>
+              <div class="stat-box"><div class="sval" style="color:#A78BFA">68.4%</div><div class="slbl">WIN RATE</div></div>
+              <div class="stat-box"><div class="sval" style="color:#FFD700">1,247</div><div class="slbl">MATCHES</div></div>
+              <div class="stat-box"><div class="sval" style="color:var(--pink)">248</div><div class="slbl">HEADSHOT %</div></div>
+              <div class="stat-box"><div class="sval" style="color:#00FF88">4,820</div><div class="slbl">RANK PTS</div></div>
+              <div class="stat-box"><div class="sval" style="color:var(--cyan)">847</div><div class="slbl">WINS</div></div>
+            </div>
+            <div class="section-title" style="margin-bottom:14px;font-size:13px">RECENT ACTIVITY</div>
+            <div class="activity-timeline">
+              <div class="timeline-item"><div class="ti-dot" style="background:#00FF88"></div><div class="ti-content"><div class="ti-title">Won ranked match on Ascent — 23/8/4 — MVP</div><div class="ti-time">2 HOURS AGO · VALORANT</div></div></div>
+              <div class="timeline-item"><div class="ti-dot" style="background:var(--cyan)"></div><div class="ti-content"><div class="ti-title">Reached Immortal 3 — new personal best</div><div class="ti-time">YESTERDAY · RANK UP</div></div></div>
+              <div class="timeline-item"><div class="ti-dot" style="background:var(--pink)"></div><div class="ti-content"><div class="ti-title">Joined Team NEXUS for scrimmage session</div><div class="ti-time">2 DAYS AGO · TEAM EVENT</div></div></div>
+              <div class="timeline-item"><div class="ti-dot" style="background:#FFD700"></div><div class="ti-content"><div class="ti-title">Earned "Clutch Master" achievement — 50 clutches</div><div class="ti-time">3 DAYS AGO · ACHIEVEMENT</div></div></div>
+              <div class="timeline-item"><div class="ti-dot" style="background:#A78BFA"></div><div class="ti-content"><div class="ti-title">Participated in GameBuddy Weekly Cup — 4th place</div><div class="ti-time">1 WEEK AGO · TOURNAMENT</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TEAMS PAGE -->
+      <div class="page" id="page-teams">
+        <div style="display:flex;gap:12px;margin-bottom:24px">
+          <select style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:10px 16px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;flex:1;cursor:pointer"><option>ALL GAMES</option><option>VALORANT</option><option>CS2</option></select>
+          <select style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:10px 16px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;flex:1;cursor:pointer"><option>LOOKING FOR</option><option>IGL</option><option>DUELIST</option><option>SENTINEL</option></select>
+          <button class="btn-primary" style="padding:10px 24px">CREATE TEAM +</button>
+        </div>
+        <div class="grid-3">
+          <div class="team-card"><div class="team-header"><div class="team-logo-lg" style="background:linear-gradient(135deg,var(--violet),#2a0a4a)">NX</div><div class="team-info"><div class="tname">Team NEXUS</div><div class="tgame">VALORANT · COMPETITIVE</div></div></div><div class="team-tags"><div class="tag">IMMORTAL+</div><div class="tag">IGL NEEDED</div><div class="tag">NA EAST</div></div><div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">Looking for a skilled IGL for ranked and tournament play. We scrim 4x weekly and aim for VCT Challengers.</div><div style="display:flex;gap:-6px;margin-bottom:14px"><div class="member-chip" style="background:linear-gradient(135deg,var(--violet),#1a1a35)">A</div><div class="member-chip" style="background:linear-gradient(135deg,#1D6FA4,#0a1a2e)">B</div><div class="member-chip" style="background:linear-gradient(135deg,#FF2D78,#1a0a0a)">C</div><div class="member-chip" style="background:linear-gradient(135deg,#00FF88,#0a1a0a)">D</div><div class="member-count">+1</div></div><div class="team-footer"><div class="team-rank">TEAM RANK: <span>#42</span></div><button class="btn-join">JOIN TEAM</button></div></div>
+          <div class="team-card"><div class="team-header"><div class="team-logo-lg" style="background:linear-gradient(135deg,var(--cyan),#003344)">PH</div><div class="team-info"><div class="tname">Phantom Ops</div><div class="tgame">CS2 · FACEIT</div></div></div><div class="team-tags"><div class="tag">FACEIT 8+</div><div class="tag">RIFLER NEEDED</div><div class="tag">EU WEST</div></div><div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">Established CS2 team looking for a consistent rifler. Strong team chemistry, active in FACEIT leagues.</div><div style="display:flex;gap:-6px;margin-bottom:14px"><div class="member-chip" style="background:linear-gradient(135deg,var(--cyan),#003344)">X</div><div class="member-chip" style="background:linear-gradient(135deg,#CC44FF,#1a0a2a)">Y</div><div class="member-chip" style="background:linear-gradient(135deg,#FFD700,#2a1a00)">Z</div><div class="member-chip" style="background:linear-gradient(135deg,var(--pink),#2a0a1a)">W</div></div><div class="team-footer"><div class="team-rank">TEAM RANK: <span>#89</span></div><button class="btn-join">JOIN TEAM</button></div></div>
+          <div class="team-card"><div class="team-header"><div class="team-logo-lg" style="background:linear-gradient(135deg,var(--pink),#2a0a1a)">SR</div><div class="team-info"><div class="tname">Storm Riders</div><div class="tgame">APEX LEGENDS · RANKED</div></div></div><div class="team-tags"><div class="tag">PRED/MASTER</div><div class="tag">SUPPORT NEEDED</div><div class="tag">NA WEST</div></div><div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">High-level Apex squad seeking a dedicated support player for ranked grind and ALGS qualifiers.</div><div style="display:flex;gap:-6px;margin-bottom:14px"><div class="member-chip" style="background:linear-gradient(135deg,var(--pink),#2a0a1a)">R</div><div class="member-chip" style="background:linear-gradient(135deg,#00FF88,#0a1a0a)">S</div></div><div class="team-footer"><div class="team-rank">TEAM RANK: <span>#17</span></div><button class="btn-join">JOIN TEAM</button></div></div>
+        </div>
+      </div>
+
+      <!-- COMMUNITY PAGE -->
+      <div class="page" id="page-community">
+        <div class="community-grid">
+          <div>
+            <div class="section-header"><div class="section-title">TRENDING DISCUSSIONS</div></div>
+            <div style="background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:20px">
+              <div class="discussion-item"><div class="di-title">Best crosshair settings for Valorant Immortal+ in 2025?</div><div class="di-meta"><span class="di-hot">🔥 HOT</span><span>342 replies</span><span>4.2K views</span></div></div>
+              <div class="discussion-item"><div class="di-title">CS2 vs Valorant — which is better for competitive ranked?</div><div class="di-meta"><span>218 replies</span><span>3.1K views</span><span>2h ago</span></div></div>
+              <div class="discussion-item"><div class="di-title">GameBuddy Season 12 patch notes — full breakdown</div><div class="di-meta"><span class="di-hot">🆕 NEW</span><span>89 replies</span><span>1.8K views</span></div></div>
+              <div class="discussion-item"><div class="di-title">How to find a serious team as a solo player guide</div><div class="di-meta"><span>156 replies</span><span>2.7K views</span><span>1d ago</span></div></div>
+              <div class="discussion-item"><div class="di-title">Mental health in competitive gaming — let's talk</div><div class="di-meta"><span class="di-hot">💬 VIRAL</span><span>521 replies</span><span>8.9K views</span></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="section-header"><div class="section-title">GAMING GROUPS</div><div class="view-all">JOIN GROUP +</div></div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="community-card"><div class="cc-header"><div class="cc-icon" style="background:rgba(124,58,237,0.2);color:var(--violet)">◈</div><div><div class="cc-title">Valorant Immortal+ Hub</div><div class="cc-sub">12,847 MEMBERS · ACTIVE</div></div></div><div style="font-size:12px;color:var(--muted);line-height:1.5">Elite Valorant community for Immortal and Radiant players. Daily scrims, VOD reviews, and team recruitment.</div></div>
+              <div class="community-card"><div class="cc-header"><div class="cc-icon" style="background:rgba(255,215,0,0.15);color:#FFD700">✦</div><div><div class="cc-title">CS2 Pro Tips</div><div class="cc-sub">8,421 MEMBERS · VERY ACTIVE</div></div></div><div style="font-size:12px;color:var(--muted);line-height:1.5">FACEIT and competitive CS2 discussion. Utility lineups, strategy guides, and pro match analysis.</div></div>
+              <div class="community-card"><div class="cc-header"><div class="cc-icon" style="background:rgba(255,45,120,0.15);color:var(--pink)">⬡</div><div><div class="cc-title">Apex Predator Squad</div><div class="cc-sub">5,233 MEMBERS · ACTIVE</div></div></div><div style="font-size:12px;color:var(--muted);line-height:1.5">For Apex Legends Masters and Predator players. Team finder, challenge lobby setup, and ranked grind partners.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEADERBOARD PAGE -->
+      <div class="page" id="page-leaderboard">
+        <div style="display:flex;gap:12px;margin-bottom:24px">
+          <select style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:10px 16px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;flex:1;cursor:pointer"><option>ALL GAMES</option><option>VALORANT</option><option>CS2</option><option>APEX LEGENDS</option></select>
+          <select style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:10px 16px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;flex:1;cursor:pointer"><option>GLOBAL RANKING</option><option>REGIONAL</option><option>FRIENDS ONLY</option></select>
+          <select style="background:var(--glass);border:1px solid var(--border);border-radius:8px;padding:10px 16px;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;flex:1;cursor:pointer"><option>ALL TIME</option><option>THIS SEASON</option><option>THIS WEEK</option></select>
+        </div>
+        <div class="leaderboard">
+          <div style="display:grid;grid-template-columns:40px 1fr 80px 80px 80px;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600">RANK</div>
+            <div style="font-size:11px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600">PLAYER</div>
+            <div style="font-size:11px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;text-align:right">SCORE</div>
+            <div style="font-size:11px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;text-align:right">K/D</div>
+            <div style="font-size:11px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;text-align:right">WINS</div>
+          </div>
+          <div class="lb-row top1"><div class="rank-num r1">01</div><div class="lb-player"><div class="lb-avatar" style="background:linear-gradient(135deg,#FFD700,#FF8C00)">XK</div><div><div class="lb-name">XenithKiller</div><div class="lb-handle">#7823 · IMMORTAL 3</div></div></div><div class="lb-score">98,420</div><div class="lb-kd">4.2</div><div class="lb-wins">847</div></div>
+          <div class="lb-row top2"><div class="rank-num r2">02</div><div class="lb-player"><div class="lb-avatar" style="background:linear-gradient(135deg,#C0C0C0,#808080)">NX</div><div><div class="lb-name">NightXero</div><div class="lb-handle">#2241 · RADIANT</div></div></div><div class="lb-score">94,815</div><div class="lb-kd">3.9</div><div class="lb-wins">792</div></div>
+          <div class="lb-row top3"><div class="rank-num r3">03</div><div class="lb-player"><div class="lb-avatar" style="background:linear-gradient(135deg,#CD7F32,#8B4513)">QN</div><div><div class="lb-name">QuantumNova</div><div class="lb-handle">#9912 · IMMORTAL 2</div></div></div><div class="lb-score">91,230</div><div class="lb-kd">3.6</div><div class="lb-wins">751</div></div>
+          <div class="lb-row"><div class="rank-num rn">04</div><div class="lb-player"><div class="lb-avatar" style="background:linear-gradient(135deg,var(--violet),#1a1a35)">SR</div><div><div class="lb-name">StormRider</div><div class="lb-handle">#4456 · IMMORTAL 1</div></div></div><div class="lb-score">88,740</div><div class="lb-kd">3.3</div><div class="lb-wins">698</div></div>
+          <div class="lb-row"><div class="rank-num rn">05</div><div class="lb-player"><div class="lb-avatar" style="background:linear-gradient(135deg,var(--cyan),#003344)">ZX</div><div><div class="lb-name">ZeroX <span style="color:var(--cyan);font-size:10px">(YOU)</span></div><div class="lb-handle">#0001 · IMMORTAL 3</div></div></div><div class="lb-score">82,150</div><div class="lb-kd">2.8</div><div class="lb-wins">621</div></div>
+          <div class="lb-row"><div class="rank-num rn">06</div><div class="lb-player"><div class="lb-avatar" style="background:linear-gradient(135deg,#FF8C00,#2a1a00)">PT</div><div><div class="lb-name">PhantomTide</div><div class="lb-handle">#3344 · DIAMOND 3</div></div></div><div class="lb-score">78,920</div><div class="lb-kd">2.5</div><div class="lb-wins">598</div></div>
+          <div class="lb-row"><div class="rank-num rn">07</div><div class="lb-player"><div class="lb-avatar" style="background:linear-gradient(135deg,#00CC77,#003322)">EZ</div><div><div class="lb-name">EchoZero</div><div class="lb-handle">#5512 · DIAMOND 2</div></div></div><div class="lb-score">75,410</div><div class="lb-kd">2.3</div><div class="lb-wins">567</div></div>
+          <div class="lb-row"><div class="rank-num rn">08</div><div class="lb-player"><div class="lb-avatar" style="background:linear-gradient(135deg,#CC44FF,#1a0a2a)">LB</div><div><div class="lb-name">LunaBlaze</div><div class="lb-handle">#8872 · IMMORTAL 1</div></div></div><div class="lb-score">72,880</div><div class="lb-kd">2.1</div><div class="lb-wins">541</div></div>
+        </div>
+      </div>
+
+      <!-- TOURNAMENTS PAGE -->
+      <div class="page" id="page-tournaments">
+        <div style="background:linear-gradient(135deg,rgba(255,215,0,0.06),rgba(124,58,237,0.1));border:1px solid rgba(255,215,0,0.15);border-radius:16px;padding:28px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:10px;letter-spacing:2px;color:#FFD700;font-family:'Rajdhani',sans-serif;font-weight:700;margin-bottom:8px">FEATURED · REGISTRATION OPEN</div>
+            <div style="font-family:'Orbitron',monospace;font-size:24px;font-weight:900;margin-bottom:6px">GameBuddy World Cup 2025</div>
+            <div style="color:var(--muted);font-size:13px;margin-bottom:16px">The biggest tournament of the year. 512 teams, 6 regions, $500,000 prize pool.</div>
+            <div style="display:flex;gap:20px">
+              <div><div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:#FFD700">$500K</div><div style="font-size:10px;color:var(--muted);font-family:'Rajdhani',sans-serif">PRIZE POOL</div></div>
+              <div><div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:var(--cyan)">512</div><div style="font-size:10px;color:var(--muted);font-family:'Rajdhani',sans-serif">TEAMS MAX</div></div>
+              <div><div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:700;color:var(--pink)">14</div><div style="font-size:10px;color:var(--muted);font-family:'Rajdhani',sans-serif">DAYS LEFT</div></div>
+            </div>
+          </div>
+          <button class="btn-primary" style="padding:14px 32px;font-size:15px;white-space:nowrap">REGISTER NOW</button>
+        </div>
+        <div class="section-header"><div class="section-title">ALL TOURNAMENTS</div></div>
+        <div class="grid-3">
+          <div class="tournament-card"><div class="tc-banner" style="background:linear-gradient(135deg,rgba(124,58,237,0.4),rgba(0,212,255,0.2))"><div style="font-family:'Orbitron',monospace;font-size:28px;font-weight:900;opacity:.15;position:absolute">VCT</div><div style="font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:var(--cyan);letter-spacing:2px;z-index:1">VALORANT</div></div><div class="tc-body"><div class="tc-game">VALORANT · OPEN BRACKET</div><div class="tc-name">VCT GameChanger Cup</div><div class="tc-prize">$25,000 PRIZE POOL</div><div class="tc-meta"><span class="tc-tag">● LIVE</span><span class="tc-slots">128/256 teams</span></div><div class="progress-bar"><div class="progress-fill" style="width:50%"></div></div></div></div>
+          <div class="tournament-card"><div class="tc-banner" style="background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,140,0,0.15))"><div style="font-family:'Orbitron',monospace;font-size:28px;font-weight:900;opacity:.15;position:absolute">CS2</div><div style="font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:#FFD700;letter-spacing:2px;z-index:1">CS2</div></div><div class="tc-body"><div class="tc-game">CS2 · INVITE ONLY</div><div class="tc-name">Majors Qualifier Series</div><div class="tc-prize">$75,000 PRIZE POOL</div><div class="tc-meta"><span class="tc-tag" style="background:rgba(255,215,0,0.1);border-color:rgba(255,215,0,0.3);color:#FFD700">QUALIFIERS</span><span class="tc-slots">48/64 teams</span></div><div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div></div></div>
+          <div class="tournament-card"><div class="tc-banner" style="background:linear-gradient(135deg,rgba(255,45,120,0.25),rgba(124,58,237,0.2))"><div style="font-family:'Orbitron',monospace;font-size:28px;font-weight:900;opacity:.15;position:absolute">APEX</div><div style="font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:var(--pink);letter-spacing:2px;z-index:1">APEX</div></div><div class="tc-body"><div class="tc-game">APEX LEGENDS · OPEN</div><div class="tc-name">ALGS Community Cup</div><div class="tc-prize">$10,000 PRIZE POOL</div><div class="tc-meta"><span class="tc-tag" style="background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.3);color:var(--cyan)">UPCOMING</span><span class="tc-slots">24/60 teams</span></div><div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div></div></div>
+        </div>
+      </div>
+
+      <!-- PREMIUM PAGE -->
+      <div class="page" id="page-premium">
+        <div style="text-align:center;margin-bottom:32px">
+          <div style="font-size:10px;letter-spacing:3px;color:var(--cyan);font-family:'Rajdhani',sans-serif;font-weight:700;margin-bottom:10px">UPGRADE YOUR EXPERIENCE</div>
+          <div style="font-family:'Orbitron',monospace;font-size:28px;font-weight:900;margin-bottom:10px">Choose Your Plan</div>
+          <div style="color:var(--muted);font-size:14px">Unlock exclusive features and dominate the competition</div>
+        </div>
+        <div class="pricing-grid">
+          <div class="pricing-card">
+            <div class="plan-name">FREE</div>
+            <div class="plan-price free-price">$0</div>
+            <div class="plan-period">FOREVER FREE</div>
+            <div class="plan-features">
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Basic player search</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Join up to 2 teams</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Community access</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Basic profile stats</span></div>
+              <div class="pf-item"><span class="pf-x">✗</span><span class="pf-text dim">Advanced analytics</span></div>
+              <div class="pf-item"><span class="pf-x">✗</span><span class="pf-text dim">Priority matchmaking</span></div>
+              <div class="pf-item"><span class="pf-x">✗</span><span class="pf-text dim">Tournament entry</span></div>
+            </div>
+            <button class="btn-secondary" style="width:100%;padding:12px">CURRENT PLAN</button>
+          </div>
+          <div class="pricing-card featured">
+            <div class="popular-badge">MOST POPULAR</div>
+            <div class="plan-name" style="margin-top:28px">PRO</div>
+            <div class="plan-price pro-price">$9.99</div>
+            <div class="plan-period">PER MONTH</div>
+            <div class="plan-features">
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Everything in Free</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Advanced analytics</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Priority matchmaking</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Join unlimited teams</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Tournament entry x5/mo</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Custom profile badge</span></div>
+              <div class="pf-item"><span class="pf-x">✗</span><span class="pf-text dim">Coaching sessions</span></div>
+            </div>
+            <button class="btn-primary" style="width:100%;padding:12px">UPGRADE TO PRO</button>
+          </div>
+          <div class="pricing-card">
+            <div class="plan-name">ELITE</div>
+            <div class="plan-price elite-price">$24.99</div>
+            <div class="plan-period">PER MONTH</div>
+            <div class="plan-features">
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Everything in Pro</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">2 coaching sessions/mo</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Unlimited tournaments</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Elite profile frame</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">AI performance insights</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Early feature access</span></div>
+              <div class="pf-item"><span class="pf-check">✓</span><span class="pf-text">Dedicated support</span></div>
+            </div>
+            <button class="btn-secondary" style="width:100%;padding:12px;border-color:rgba(255,215,0,0.4);color:#FFD700">GET ELITE</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS PAGE -->
+      <div class="page" id="page-settings">
+        <div style="display:grid;grid-template-columns:220px 1fr;gap:20px">
+          <div style="background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:16px;height:fit-content">
+            <div style="font-size:10px;letter-spacing:2px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;margin-bottom:12px;padding:0 8px">SETTINGS</div>
+            <div id="stab-account" class="nav-item active" onclick="switchSettings('account')"><span class="icon">◈</span><span>Account</span></div>
+            <div id="stab-notif" class="nav-item" onclick="switchSettings('notif')"><span class="icon">🔔</span><span>Notifications</span></div>
+            <div id="stab-privacy" class="nav-item" onclick="switchSettings('privacy')"><span class="icon">⊕</span><span>Privacy</span></div>
+            <div id="stab-appearance" class="nav-item" onclick="switchSettings('appearance')"><span class="icon">◎</span><span>Appearance</span></div>
+            <div id="stab-connected" class="nav-item" onclick="switchSettings('connected')"><span class="icon">⊞</span><span>Connected Games</span></div>
+          </div>
+          <div style="background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:28px">
+            <div id="settings-account">
+              <div style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;margin-bottom:24px;color:var(--text)">Account Settings</div>
+              <div style="display:flex;flex-direction:column;gap:20px">
+                <div><div style="font-size:12px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px;margin-bottom:8px">DISPLAY NAME</div><input value="ZeroX" style="width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:12px 16px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none"></div>
+                <div><div style="font-size:12px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px;margin-bottom:8px">EMAIL</div><input value="zerox@gamebuddy.gg" style="width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:12px 16px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none"></div>
+                <div><div style="font-size:12px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px;margin-bottom:8px">REGION</div><select style="width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:12px 16px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;cursor:pointer"><option>North America East</option><option>North America West</option><option>Europe West</option><option>Asia Pacific</option></select></div>
+                <div><div style="font-size:12px;color:var(--muted);font-family:'Rajdhani',sans-serif;font-weight:600;letter-spacing:1px;margin-bottom:8px">BIO</div><textarea rows="3" style="width:100%;background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:12px 16px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;resize:none">Competitive Valorant player since beta. Looking for serious ranked stack.</textarea></div>
+                <div style="display:flex;gap:12px"><button class="btn-primary" style="padding:12px 28px">SAVE CHANGES</button><button class="btn-secondary" style="padding:12px 28px">CANCEL</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const pages={dashboard:'Dashboard',explore:'Explore Players',profile:'My Profile',teams:'Team Finder',tournaments:'Tournaments',leaderboard:'Leaderboards',community:'Community Hub',premium:'Premium',settings:'Settings'};
+function switchPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pg=document.getElementById('page-'+id);
+  if(pg)pg.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active')});
+  document.getElementById('page-title').textContent=pages[id]||id;
+}
+function switchSettings(tab){
+  document.querySelectorAll('[id^="stab-"]').forEach(s=>s.classList.remove('active'));
+  const t=document.getElementById('stab-'+tab);
+  if(t)t.classList.add('active');
+}
+</script>

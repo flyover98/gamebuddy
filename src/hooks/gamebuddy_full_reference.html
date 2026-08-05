@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GameBuddy — Full Project Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060608;
+    --bg2: #0e0e12;
+    --bg3: #16161c;
+    --border: #1e1e28;
+    --cyan: #22d3ee;
+    --blue: #3b82f6;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --dim: #334155;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; line-height: 1.6; }
+  code, pre, .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── Layout ── */
+  .sidebar {
+    position: fixed; top: 0; left: 0; width: 260px; height: 100vh;
+    background: var(--bg2); border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 24px 0; z-index: 100;
+  }
+  .main { margin-left: 260px; padding: 48px; max-width: 960px; }
+  @media (max-width: 900px) { .sidebar { display: none; } .main { margin-left: 0; padding: 24px; } }
+
+  /* ── Sidebar ── */
+  .logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .logo-text { font-size: 20px; font-weight: 800; }
+  .logo-accent { color: var(--cyan); }
+  .logo-sub { font-size: 11px; color: var(--muted); margin-top: 4px; font-family: 'JetBrains Mono'; }
+  .nav-section { padding: 8px 20px 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .nav-item { display: block; padding: 7px 20px; font-size: 13px; color: #94a3b8; text-decoration: none; cursor: pointer; transition: all 0.15s; border-left: 2px solid transparent; }
+  .nav-item:hover, .nav-item.active { color: var(--cyan); background: rgba(34,211,238,0.05); border-left-color: var(--cyan); }
+  .nav-badge { float: right; font-size: 10px; padding: 1px 6px; border-radius: 99px; font-family: 'JetBrains Mono'; }
+  .badge-done { background: rgba(74,222,128,0.15); color: var(--green); }
+  .badge-pending { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .badge-phase { background: rgba(34,211,238,0.15); color: var(--cyan); }
+
+  /* ── Sections ── */
+  section { margin-bottom: 64px; scroll-margin-top: 24px; }
+  h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
+  h2 { font-size: 22px; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; color: var(--cyan); }
+  h4 { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #94a3b8; }
+  p { font-size: 14px; color: #94a3b8; margin-bottom: 12px; line-height: 1.7; }
+
+  /* ── Cards ── */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+  .card-row { display: flex; align-items: flex-start; gap: 12px; }
+  .card-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* ── Code blocks ── */
+  .code-block { background: #0a0a0f; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 12px 0; }
+  .code-header { background: var(--bg3); padding: 8px 16px; font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono'; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .code-body { padding: 16px; font-size: 12px; overflow-x: auto; line-height: 1.7; }
+  .code-body .kw { color: #c792ea; }
+  .code-body .fn { color: #82aaff; }
+  .code-body .str { color: #c3e88d; }
+  .code-body .cm { color: #546e7a; font-style: italic; }
+  .code-body .cn { color: var(--cyan); }
+  .code-body .yn { color: var(--yellow); }
+
+  /* ── Progress ── */
+  .progress-item { margin-bottom: 14px; }
+  .progress-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+  .progress-bar-bg { height: 6px; background: var(--bg3); border-radius: 99px; overflow: hidden; }
+  .progress-bar { height: 100%; border-radius: 99px; transition: width 1s ease; }
+
+  /* ── Tags ── */
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; margin: 2px; font-family: 'JetBrains Mono'; }
+  .tag-done { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+  .tag-todo { background: rgba(251,191,36,0.1); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+  .tag-critical { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+  .tag-info { background: rgba(34,211,238,0.1); color: var(--cyan); border: 1px solid rgba(34,211,238,0.2); }
+
+  /* ── Grid ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
+
+  /* ── Tables ── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
+  th { text-align: left; padding: 10px 12px; background: var(--bg3); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: #94a3b8; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { color: var(--text); font-weight: 600; }
+
+  /* ── Phase headers ── */
+  .phase-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .phase-num { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0; }
+  .phase-meta { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: 'JetBrains Mono'; }
+
+  /* ── Step items ── */
+  .step { display: flex; gap: 14px; margin-bottom: 16px; padding: 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; }
+  .step-num { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; font-family: 'JetBrains Mono'; }
+  .step-done { background: rgba(74,222,128,0.15); color: var(--green); }
+  .step-pending { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .step-body { flex: 1; }
+  .step-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .step-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .step-files { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+
+  /* ── Divider ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+  /* ── Alert ── */
+  .alert { padding: 14px 16px; border-radius: 10px; font-size: 13px; margin: 12px 0; display: flex; gap: 10px; }
+  .alert-warn { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); color: #fde68a; }
+  .alert-info { background: rgba(34,211,238,0.08); border: 1px solid rgba(34,211,238,0.2); color: #a5f3fc; }
+  .alert-success { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); color: #bbf7d0; }
+
+  /* ── Copy button ── */
+  .copy-btn { cursor: pointer; background: var(--bg3); border: 1px solid var(--border); color: var(--muted); padding: 3px 10px; border-radius: 6px; font-size: 11px; font-family: 'JetBrains Mono'; transition: all 0.15s; }
+  .copy-btn:hover { color: var(--cyan); border-color: var(--cyan); }
+
+  /* ── Hero ── */
+  .hero { padding: 48px 0 32px; border-bottom: 1px solid var(--border); margin-bottom: 48px; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.2); border-radius: 99px; font-size: 11px; color: var(--cyan); font-family: 'JetBrains Mono'; margin-bottom: 16px; }
+  .hero-dot { width: 6px; height: 6px; background: var(--cyan); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+  .completion-ring { display: inline-flex; align-items: center; gap: 24px; background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 16px 24px; margin-top: 20px; }
+  .ring-stat { text-align: center; }
+  .ring-val { font-size: 28px; font-weight: 800; font-family: 'JetBrains Mono'; }
+  .ring-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .ring-divider { width: 1px; height: 40px; background: var(--border); }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-text">Game<span class="logo-accent">Buddy</span></div>
+    <div class="logo-sub">Full Project Reference · $100K Build</div>
+  </div>
+
+  <div class="nav-section">Overview</div>
+  <a class="nav-item active" onclick="scrollTo('overview')">Project Status <span class="nav-badge badge-phase">28%→100%</span></a>
+  <a class="nav-item" onclick="scrollTo('db-schema')">DB Schema</a>
+  <a class="nav-item" onclick="scrollTo('ai-prompt')">AI Handoff Prompt</a>
+
+  <div class="nav-section">Phase 1 — Fix & Fill</div>
+  <a class="nav-item" onclick="scrollTo('step1')">Step 1 · useBuddies <span class="nav-badge badge-done">✓</span></a>
+  <a class="nav-item" onclick="scrollTo('step2')">Step 2 · useNotifications <span class="nav-badge badge-done">✓</span></a>
+  <a class="nav-item" onclick="scrollTo('step3')">Step 3 · OnlineBadge <span class="nav-badge badge-done">✓</span></a>
+  <a class="nav-item" onclick="scrollTo('step4')">Step 4 · RequestModal <span class="nav-badge badge-done">✓</span></a>
+  <a class="nav-item" onclick="scrollTo('step5')">Step 5 · Slug Fix <span class="nav-badge badge-done">✓</span></a>
+  <a class="nav-item" onclick="scrollTo('step6')">Step 6 · Dupe Guard <span class="nav-badge badge-done">✓</span></a>
+  <a class="nav-item" onclick="scrollTo('step7')">Step 7 · RLS Policies <span class="nav-badge badge-done">✓</span></a>
+  <a class="nav-item" onclick="scrollTo('step8')">Step 8 · Presence Fix <span class="nav-badge badge-done">✓</span></a>
+
+  <div class="nav-section">Phase 2 — Core UX</div>
+  <a class="nav-item" onclick="scrollTo('p2-edit')">Edit Profile Page <span class="nav-badge badge-pending">todo</span></a>
+  <a class="nav-item" onclick="scrollTo('p2-avatar')">Avatar Upload <span class="nav-badge badge-pending">todo</span></a>
+  <a class="nav-item" onclick="scrollTo('p2-scroll')">Infinite Scroll <span class="nav-badge badge-pending">todo</span></a>
+  <a class="nav-item" onclick="scrollTo('p2-games')">Multiple Games <span class="nav-badge badge-pending">todo</span></a>
+  <a class="nav-item" onclick="scrollTo('p2-404')">404 / Error Pages <span class="nav-badge badge-pending">todo</span></a>
+
+  <div class="nav-section">Phase 3 — Retention</div>
+  <a class="nav-item" onclick="scrollTo('p3-chat')">In-app DM Chat <span class="nav-badge badge-pending">todo</span></a>
+  <a class="nav-item" onclick="scrollTo('p3-oauth')">Google/Discord OAuth <span class="nav-badge badge-pending">todo</span></a>
+  <a class="nav-item" onclick="scrollTo('p3-squad')">Squad System <span class="nav-badge badge-pending">todo</span></a>
+  <a class="nav-item" onclick="scrollTo('p3-email')">Email Notifications <span class="nav-badge badge-pending">todo</span></a>
+
+  <div class="nav-section">Phase 4 — Growth</div>
+  <a class="nav-item" onclick="scrollTo('p4-tournaments')">Tournaments Page <span class="nav-badge badge-pending">todo</span></a>
+  <a class="nav-item" onclick="scrollTo('p4-leaderboard')">Leaderboards <span class="nav-badge badge-pending">todo</span></a>
+  <a class="nav-item" onclick="scrollTo('p4-pwa')">Mobile PWA <span class="nav-badge badge-pending">todo</span></a>
+  <a class="nav-item" onclick="scrollTo('p4-admin')">Admin Dashboard <span class="nav-badge badge-pending">todo</span></a>
+</nav>
+
+<!-- Main content -->
+<main class="main">
+
+  <!-- Hero -->
+  <div class="hero" id="overview">
+    <div class="hero-badge"><span class="hero-dot"></span> Next.js 16 + Supabase Project</div>
+    <h1>GameBuddy Reference</h1>
+    <p>Complete build guide for all 4 phases. Use this file to continue with any AI if tokens run out.</p>
+    <div class="completion-ring">
+      <div class="ring-stat"><div class="ring-val" style="color:var(--yellow)">28%</div><div class="ring-label">Phase 1 Start</div></div>
+      <div class="ring-divider"></div>
+      <div class="ring-stat"><div class="ring-val" style="color:var(--cyan)">~65%</div><div class="ring-label">After Phase 1+2</div></div>
+      <div class="ring-divider"></div>
+      <div class="ring-stat"><div class="ring-val" style="color:var(--green)">100%</div><div class="ring-label">All 4 Phases</div></div>
+      <div class="ring-divider"></div>
+      <div class="ring-stat"><div class="ring-val" style="color:var(--purple)">$100K</div><div class="ring-label">Target Value</div></div>
+    </div>
+  </div>
+
+  <!-- DB Schema -->
+  <section id="db-schema">
+    <h2>Database Schema</h2>
+    <p>Two tables. All code references these exact column names.</p>
+    <div class="grid2">
+      <div class="card">
+        <h3>player_profiles</h3>
+        <table>
+          <tr><th>Column</th><th>Type</th></tr>
+          <tr><td>id</td><td>uuid (PK, = auth.uid)</td></tr>
+          <tr><td>username</td><td>text NOT NULL</td></tr>
+          <tr><td>display_name</td><td>text</td></tr>
+          <tr><td>avatar_url</td><td>text</td></tr>
+          <tr><td>discord_tag</td><td>text NOT NULL</td></tr>
+          <tr><td>bio</td><td>text</td></tr>
+          <tr><td>primary_game</td><td>text NOT NULL (slug)</td></tr>
+          <tr><td>secondary_games</td><td>text[]</td></tr>
+          <tr><td>current_rank</td><td>text NOT NULL</td></tr>
+          <tr><td>region</td><td>text NOT NULL</td></tr>
+          <tr><td>playstyle</td><td>text</td></tr>
+          <tr><td>languages</td><td>text[]</td></tr>
+          <tr><td>hours_per_week</td><td>integer</td></tr>
+          <tr><td>mic_available</td><td>boolean</td></tr>
+          <tr><td>is_online</td><td>boolean DEFAULT false</td></tr>
+          <tr><td>last_seen</td><td>timestamptz</td></tr>
+          <tr><td>created_at</td><td>timestamptz</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>buddy_requests</h3>
+        <table>
+          <tr><th>Column</th><th>Type</th></tr>
+          <tr><td>id</td><td>uuid (PK)</td></tr>
+          <tr><td>sender_id</td><td>uuid → player_profiles.id</td></tr>
+          <tr><td>receiver_id</td><td>uuid → player_profiles.id</td></tr>
+          <tr><td>status</td><td>text</td></tr>
+          <tr><td>message</td><td>text (nullable)</td></tr>
+          <tr><td>created_at</td><td>timestamptz</td></tr>
+        </table>
+        <h3 style="margin-top:16px">Status values</h3>
+        <span class="tag tag-info">pending</span>
+        <span class="tag tag-done">accepted</span>
+        <span class="tag tag-critical">declined</span>
+        <span class="tag tag-todo">removed</span>
+        <h3 style="margin-top:16px">Game slugs (DB values)</h3>
+        <span class="tag tag-info">valorant</span>
+        <span class="tag tag-info">bgmi</span>
+        <span class="tag tag-info">cs2</span>
+        <span class="tag tag-info">freefire</span>
+        <span class="tag tag-info">lol</span>
+        <span class="tag tag-info">apex</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI Handoff Prompt -->
+  <section id="ai-prompt">
+    <h2>AI Handoff Prompt</h2>
+    <p>If tokens run out, paste this into any AI (Gemini, GPT-4, etc.) to continue exactly where we left off.</p>
+    <div class="alert alert-warn">⚠️ Replace [PHASE X STEP Y] and [description] with the specific task you need next.</div>
+    <div class="code-block">
+      <div class="code-header">Paste this into Gemini / GPT-4 <button class="copy-btn" onclick="copyPrompt()">copy</button></div>
+      <div class="code-body" id="handoff-prompt">I'm building a gaming platform called GameBuddy using Next.js 16 (App Router) + Supabase + Tailwind CSS.
+
+TECH STACK:
+- Next.js 16 App Router ('use client' components)
+- Supabase (auth, postgres, realtime)
+- Tailwind CSS (dark theme, bg-[#050505])
+- Path alias: @/ maps to src/
+- supabase client: import { supabase } from '@/lib/supabaseClient'
+
+DATABASE:
+Table 1: player_profiles
+  id (uuid, = auth.uid()), username (text), display_name (text),
+  avatar_url (text), discord_tag (text), bio (text),
+  primary_game (text slug: valorant/bgmi/cs2/freefire/lol/apex),
+  secondary_games (text[]), current_rank (text), region (text),
+  playstyle (text: Casual/Competitive/Coach), languages (text[]),
+  hours_per_week (int), mic_available (bool),
+  is_online (bool default false), last_seen (timestamptz), created_at (timestamptz)
+
+Table 2: buddy_requests
+  id (uuid), sender_id (uuid), receiver_id (uuid),
+  status (text: pending/accepted/declined/removed),
+  message (text nullable), created_at (timestamptz)
+
+COMPLETED WORK (Phase 1 — all done):
+✅ useBuddies.js — fetches accepted buddies both directions, real-time sub, removeBuddy()
+✅ useNotifications.js — real-time NEW_REQUEST + REQUEST_ACCEPTED notifications
+✅ NotificationBell.jsx — dropdown bell with unread badge, markRead, markAllRead
+✅ OnlineBadge.jsx — green dot component, size sm/md/lg, showLabel prop
+✅ RequestModal.jsx — confirm dialog before sending request, custom message, dupe check
+✅ BuddyCard.jsx — uses OnlineBadge + RequestModal
+✅ FilterBar.jsx — game slugs fix (label vs value separated), exported GAMES array
+✅ page.js (homepage) — slug fix, real-time presence updates via separate useEffect
+✅ dashboard/page.js — tabs (Requests + My Buddies), usePresence, NotificationBell wired
+✅ usePresence.js — active flag fix for React Strict Mode, heartbeat 30s, visibilitychange
+✅ RLS Policies — 8 policies on both tables, confirmed in Supabase
+
+WHAT I NEED NOW:
+[DESCRIBE THE NEXT FEATURE YOU WANT HERE]
+
+Please write the complete file(s) with no placeholders. Use @/ imports, Tailwind classes, and the dark theme (bg-[#050505], text-white, cyan-400 accents).</div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- PHASE 1 -->
+  <section>
+    <div class="phase-header">
+      <div class="phase-num" style="background:rgba(74,222,128,0.15);color:var(--green)">1</div>
+      <div>
+        <h2 style="border:none;margin:0;padding:0">Phase 1 — Fix &amp; Fill</h2>
+        <div class="phase-meta">~$8K value · All 8 steps COMPLETED ✅</div>
+      </div>
+    </div>
+
+    <div class="step" id="step1">
+      <div class="step-num step-done">1</div>
+      <div class="step-body">
+        <div class="step-title">useBuddies.js + Dashboard upgrade</div>
+        <div class="step-desc">Fetches accepted buddy connections in both directions (sent + received). Merges, deduplicates, sorts online-first. Real-time Supabase subscription auto-refreshes on changes. removeBuddy() with optimistic UI. Dashboard upgraded with My Buddies tab, online/offline grouping, Discord copy button.</div>
+        <div class="step-files">
+          <span class="tag tag-done">src/hooks/useBuddies.js</span>
+          <span class="tag tag-done">src/app/dashboard/page.js</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="step2">
+      <div class="step-num step-done">2</div>
+      <div class="step-body">
+        <div class="step-title">useNotifications.js + NotificationBell.jsx</div>
+        <div class="step-desc">Two real-time Supabase subscriptions: INSERT on buddy_requests (new request) and UPDATE where status=accepted (acceptance). Loads last 7 days on mount. Bell icon with cyan unread badge, dropdown feed, markRead/markAllRead. Click outside closes. Wire: &lt;NotificationBell userId={user?.id} /&gt; in dashboard header.</div>
+        <div class="step-files">
+          <span class="tag tag-done">src/hooks/useNotifications.js</span>
+          <span class="tag tag-done">src/components/NotificationBell.jsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="step3">
+      <div class="step-num step-done">3</div>
+      <div class="step-body">
+        <div class="step-title">OnlineBadge.jsx + BuddyCard updated</div>
+        <div class="step-desc">Reusable green dot. Props: isOnline, lastSeen, size (sm/md/lg), showLabel, className. Without showLabel: dot only for avatar overlay. With showLabel: dot + "Online" or "Last seen Xh ago". Glowing shadow when online. BuddyCard updated to use OnlineBadge on avatar and inline.</div>
+        <div class="step-files">
+          <span class="tag tag-done">src/components/OnlineBadge.jsx</span>
+          <span class="tag tag-done">src/components/BuddyCard.jsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="step4">
+      <div class="step-num step-done">4</div>
+      <div class="step-body">
+        <div class="step-title">RequestModal.jsx</div>
+        <div class="step-desc">Confirm dialog before sending buddy request. Shows player preview with OnlineBadge. Pre-filled custom message (editable, 120 char limit). Duplicate check before insert (both directions, pending + accepted). Escape key closes. Click overlay closes. BuddyCard + Buddy button now opens modal instead of direct send.</div>
+        <div class="step-files">
+          <span class="tag tag-done">src/components/RequestModal.jsx</span>
+          <span class="tag tag-done">src/components/BuddyCard.jsx (wired)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="step5">
+      <div class="step-num step-done">5</div>
+      <div class="step-body">
+        <div class="step-title">Game slug bug fix — FilterBar + page.js</div>
+        <div class="step-desc">FilterBar was passing display names ("Counter-Strike 2") to DB query but DB stores slugs ("cs2") — filters never matched. Fix: GAMES array now has {label, value} pairs. value=slug sent to query, label shown to user. page.js uses GAME_LABELS lookup to convert slug back to label for card display. Also added separate useEffect for real-time presence updates on homepage cards.</div>
+        <div class="step-files">
+          <span class="tag tag-done">src/components/FilterBar.jsx</span>
+          <span class="tag tag-done">src/app/page.js</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="step6">
+      <div class="step-num step-done">6</div>
+      <div class="step-body">
+        <div class="step-title">Duplicate request guard</div>
+        <div class="step-desc">Built directly into RequestModal.jsx. Before inserting, queries buddy_requests with .or() covering both directions (you→them AND them→you) with status in (pending, accepted). Shows "Already buddies 🎉" or "Pending request exists" inline error. No separate file needed.</div>
+        <div class="step-files">
+          <span class="tag tag-done">Built into RequestModal.jsx</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="step7">
+      <div class="step-num step-done">7</div>
+      <div class="step-body">
+        <div class="step-title">Supabase RLS Policies</div>
+        <div class="step-desc">8 policies confirmed in DB. player_profiles: anyone can SELECT (discovery), only own row INSERT/UPDATE, no DELETE. buddy_requests: only sender/receiver can SELECT, sender_id must = auth.uid() on INSERT, can't send to yourself, either party can UPDATE (accept/decline/remove), no hard DELETE.</div>
+        <div class="step-files">
+          <span class="tag tag-done">rls_policies.sql (run in Supabase SQL Editor)</span>
+        </div>
+        <div class="code-block" style="margin-top:10px">
+          <div class="code-header">Verify RLS (run in Supabase SQL Editor)</div>
+          <div class="code-body">SELECT tablename, policyname, cmd FROM pg_policies
+WHERE tablename IN ('player_profiles', 'buddy_requests')
+ORDER BY tablename, cmd;
+<span class="cm">-- Should return exactly 8 rows</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="step8">
+      <div class="step-num step-done">8</div>
+      <div class="step-body">
+        <div class="step-title">usePresence.js — React Strict Mode fix</div>
+        <div class="step-desc">Root cause: React Strict Mode double-invokes useEffect (mount→cleanup→mount). Cleanup called markOffline() which overwrote markOnline(). Fix: active flag — cleanup sets active=false, markOffline() no-ops if !active. Real unmount uses setTimeout(500ms) + checks session before marking offline. Heartbeat every 30s. visibilitychange for mobile.</div>
+        <div class="step-files">
+          <span class="tag tag-done">src/hooks/usePresence.js</span>
+        </div>
+        <div class="alert alert-info" style="margin-top:10px">Make sure usePresence is called in dashboard/page.js:<br><code>import { usePresence } from '@/hooks/usePresence';</code><br><code>usePresence(user?.id); // inside Dashboard component</code></div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- PHASE 2 -->
+  <section>
+    <div class="phase-header">
+      <div class="phase-num" style="background:rgba(34,211,238,0.15);color:var(--cyan)">2</div>
+      <div>
+        <h2 style="border:none;margin:0;padding:0">Phase 2 — Core UX</h2>
+        <div class="phase-meta">~$22K value · Not started</div>
+      </div>
+    </div>
+
+    <div class="step" id="p2-edit">
+      <div class="step-num step-pending">1</div>
+      <div class="step-body">
+        <div class="step-title">Edit Profile Page — src/app/profile/edit/page.js</div>
+        <div class="step-desc">Pre-fills all existing profile fields from DB. Same fields as create page. On submit: supabase.from('player_profiles').update({...}).eq('id', user.id). Redirect to /dashboard after save. Add "Edit Profile" button in dashboard that routes to /profile/edit.</div>
+        <div class="step-files">
+          <span class="tag tag-todo">src/app/profile/edit/page.js</span>
+        </div>
+        <div class="code-block" style="margin-top:10px">
+          <div class="code-header">AI prompt for this step</div>
+          <div class="code-body">Build src/app/profile/edit/page.js for GameBuddy.
+Pre-fill all player_profiles fields from Supabase on mount.
+On submit call supabase.from('player_profiles').update().eq('id', user.id).
+Redirect to /dashboard on success. Same styling as profile/create page (dark theme, cyan accents).</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="p2-avatar">
+      <div class="step-num step-pending">2</div>
+      <div class="step-body">
+        <div class="step-title">Avatar Upload — Supabase Storage</div>
+        <div class="step-desc">Create a Supabase Storage bucket called "avatars" (public). Upload file to avatars/{userId}.jpg. Save public URL to player_profiles.avatar_url. Show preview before upload. Accept image/* only, max 2MB. Use the avatar_url in BuddyCard and dashboard profile card instead of the letter avatar.</div>
+        <div class="step-files">
+          <span class="tag tag-todo">src/components/AvatarUpload.jsx</span>
+          <span class="tag tag-todo">Used in profile/edit/page.js</span>
+        </div>
+        <div class="alert alert-warn" style="margin-top:8px">First create the bucket in Supabase → Storage → New bucket → name: "avatars" → Public: ON</div>
+      </div>
+    </div>
+
+    <div class="step" id="p2-scroll">
+      <div class="step-num step-pending">3</div>
+      <div class="step-body">
+        <div class="step-title">Infinite Scroll — Replace 48-item hard cap</div>
+        <div class="step-desc">Replace .limit(48) with cursor-based pagination. Use .range(from, to) for each page (12 items). Add Intersection Observer on a sentinel div at the bottom of the grid. When sentinel enters viewport, fetch next 12 items and append to buddies state. Show loading spinner while fetching.</div>
+        <div class="step-files">
+          <span class="tag tag-todo">src/hooks/useInfiniteProfiles.js</span>
+          <span class="tag tag-todo">src/app/page.js (updated)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="p2-games">
+      <div class="step-num step-pending">4</div>
+      <div class="step-body">
+        <div class="step-title">Multiple Games on Profile</div>
+        <div class="step-desc">secondary_games column already exists as text[]. In edit profile, add a multi-select for secondary games (all GAMES slugs except primary). Show secondary game tags on BuddyCard below the primary game. In FilterBar, searching by game should also match secondary_games using .contains('secondary_games', [slug]).</div>
+        <div class="step-files">
+          <span class="tag tag-todo">src/app/profile/edit/page.js</span>
+          <span class="tag tag-todo">src/components/BuddyCard.jsx</span>
+          <span class="tag tag-todo">src/app/page.js (filter update)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="p2-404">
+      <div class="step-num step-pending">5</div>
+      <div class="step-body">
+        <div class="step-title">404 + Error Pages</div>
+        <div class="step-desc">Next.js App Router special files. not-found.js shows when profile username doesn't exist. error.js shows on runtime errors with a retry button. Both should match the dark GameBuddy theme with navigation back to homepage.</div>
+        <div class="step-files">
+          <span class="tag tag-todo">src/app/not-found.js</span>
+          <span class="tag tag-todo">src/app/error.js</span>
+          <span class="tag tag-todo">src/app/profile/[username]/not-found.js</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- PHASE 3 -->
+  <section>
+    <div class="phase-header">
+      <div class="phase-num" style="background:rgba(167,139,250,0.15);color:var(--purple)">3</div>
+      <div>
+        <h2 style="border:none;margin:0;padding:0">Phase 3 — Monetization &amp; Retention</h2>
+        <div class="phase-meta">~$35K value · Not started</div>
+      </div>
+    </div>
+
+    <div class="step" id="p3-chat">
+      <div class="step-num step-pending">1</div>
+      <div class="step-body">
+        <div class="step-title">In-app DM Chat (3 files)</div>
+        <div class="step-desc">Only accepted buddies can message each other. Create a messages table in Supabase. Real-time via Supabase Realtime. Sidebar shows buddy list, clicking opens chat window on right.</div>
+        <div class="step-files">
+          <span class="tag tag-todo">src/app/messages/page.js</span>
+          <span class="tag tag-todo">src/hooks/useMessages.js</span>
+          <span class="tag tag-todo">src/components/ChatWindow.jsx</span>
+        </div>
+        <div class="code-block" style="margin-top:10px">
+          <div class="code-header">SQL — Create messages table first</div>
+          <div class="code-body">CREATE TABLE messages (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  sender_id UUID REFERENCES player_profiles(id),
+  receiver_id UUID REFERENCES player_profiles(id),
+  content TEXT NOT NULL,
+  read BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+<span class="cm">-- RLS: users can only see messages they sent or received</span>
+CREATE POLICY "Users see own messages" ON messages
+FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
+CREATE POLICY "Users send own messages" ON messages
+FOR INSERT WITH CHECK (auth.uid() = sender_id);</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="p3-oauth">
+      <div class="step-num step-pending">2</div>
+      <div class="step-body">
+        <div class="step-title">Google / Discord OAuth</div>
+        <div class="step-desc">Enable in Supabase Dashboard → Auth → Providers. Add Google and Discord. In login page add buttons: supabase.auth.signInWithOAuth({provider: 'google', options: {redirectTo: '/auth/callback'}}). Auth callback route already exists at src/app/auth/callback/route.js.</div>
+        <div class="step-files">
+          <span class="tag tag-todo">src/app/login/page.js (add OAuth buttons)</span>
+        </div>
+        <div class="alert alert-warn" style="margin-top:8px">Configure OAuth credentials in Supabase Dashboard → Auth → Providers BEFORE coding</div>
+      </div>
+    </div>
+
+    <div class="step" id="p3-squad">
+      <div class="step-num step-pending">3</div>
+      <div class="step-body">
+        <div class="step-title">Squad / Team System</div>
+        <div class="step-desc">Create squads table and squad_members table. Users can create a named squad, invite accepted buddies. Squad page shows roster, game, and region. Squad leader can kick members.</div>
+        <div class="step-files">
+          <span class="tag tag-todo">src/app/squads/page.js</span>
+          <span class="tag tag-todo">src/app/squads/[id]/page.js</span>
+          <span class="tag tag-todo">src/hooks/useSquad.js</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="p3-email">
+      <div class="step-num step-pending">4</div>
+      <div class="step-body">
+        <div class="step-title">Email Notifications</div>
+        <div class="step-desc">Use Resend (resend.com) or Supabase Edge Functions. Send email when: someone sends you a buddy request, someone accepts your request. Use Supabase Database Webhooks to trigger an Edge Function that calls Resend API.</div>
+        <div class="step-files">
+          <span class="tag tag-todo">supabase/functions/send-notification/index.ts</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- PHASE 4 -->
+  <section>
+    <div class="phase-header">
+      <div class="phase-num" style="background:rgba(251,191,36,0.15);color:var(--yellow)">4</div>
+      <div>
+        <h2 style="border:none;margin:0;padding:0">Phase 4 — Growth</h2>
+        <div class="phase-meta">~$35K value · Not started</div>
+      </div>
+    </div>
+
+    <div class="step" id="p4-tournaments">
+      <div class="step-num step-pending">1</div>
+      <div class="step-body">
+        <div class="step-title">Tournaments Page</div>
+        <div class="step-desc">Nav link already exists in homepage but href="#". Create a tournaments table. Show upcoming tournaments with game, date, prize pool, max teams. Allow squad leaders to register their squad. Bracket generator for started tournaments.</div>
+        <div class="step-files">
+          <span class="tag tag-todo">src/app/tournaments/page.js</span>
+          <span class="tag tag-todo">src/app/tournaments/[id]/page.js</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="p4-leaderboard">
+      <div class="step-num step-pending">2</div>
+      <div class="step-body">
+        <div class="step-title">Leaderboards</div>
+        <div class="step-desc">Nav link already exists but href="#". Show top players per game sorted by rank. Filter by region. Show player rank badge icons per game (Valorant radianite, BGMI tiers). Link to player public profile.</div>
+        <div class="step-files">
+          <span class="tag tag-todo">src/app/leaderboards/page.js</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="p4-pwa">
+      <div class="step-num step-pending">3</div>
+      <div class="step-body">
+        <div class="step-title">Mobile PWA</div>
+        <div class="step-desc">Add next-pwa package. Configure manifest.json with GameBuddy icons. Service worker for offline cache. Push notifications via Web Push API when receiving buddy requests. Add to homescreen prompt.</div>
+        <div class="step-files">
+          <span class="tag tag-todo">public/manifest.json</span>
+          <span class="tag tag-todo">next.config.js (pwa config)</span>
+        </div>
+        <div class="code-block" style="margin-top:10px">
+          <div class="code-header">Install</div>
+          <div class="code-body">npm install next-pwa</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" id="p4-admin">
+      <div class="step-num step-pending">4</div>
+      <div class="step-body">
+        <div class="step-title">Admin Dashboard</div>
+        <div class="step-desc">Protected route — check if user email is in an admins table. Show all profiles, ability to ban users (set is_banned=true), view total stats (total users, active today, requests sent). Use Supabase service_role key in a server component (never expose to client).</div>
+        <div class="step-files">
+          <span class="tag tag-todo">src/app/admin/page.js (server component)</span>
+          <span class="tag tag-todo">src/lib/supabaseAdmin.js (service role)</span>
+        </div>
+        <div class="alert alert-warn" style="margin-top:8px">Use supabaseServer.js with service_role key — NEVER the anon key for admin operations</div>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- Known bugs -->
+  <section>
+    <h2>Known Issues &amp; Notes</h2>
+    <div class="card">
+      <div class="card-row">
+        <div class="card-icon">🟡</div>
+        <div class="card-body">
+          <div class="card-title">Presence shows online but green dot doesn't appear on homepage cards</div>
+          <div class="card-desc">usePresence marks is_online=true in DB. Homepage fetches data once on load. Real-time subscription in separate useEffect should update cards. If still not working: hard refresh homepage while dashboard is open. The issue may be the real-time subscription not connecting — check Supabase Realtime is enabled on the player_profiles table in Dashboard → Database → Replication.</div>
+          <div style="margin-top:8px"><span class="tag tag-todo">Check Supabase → Database → Replication → player_profiles is toggled ON</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-row">
+        <div class="card-icon">🔵</div>
+        <div class="card-body">
+          <div class="card-title">profile/create used as edit page — needs separate edit route</div>
+          <div class="card-desc">Dashboard "Edit Profile" button links to /profile/create which is the create flow. Phase 2 Step 1 builds a proper /profile/edit page.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-row">
+        <div class="card-icon">🔵</div>
+        <div class="card-body">
+          <div class="card-title">Tournaments and Leaderboards nav links go to href="#"</div>
+          <div class="card-desc">Nav links exist in homepage header but point to "#". Phase 4 builds these pages.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  function scrollTo(id) {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+
+  function copyPrompt() {
+    const text = document.getElementById('handoff-prompt').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'copied!';
+      btn.style.color = 'var(--green)';
+      setTimeout(() => { btn.textContent = 'copy'; btn.style.color = ''; }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
